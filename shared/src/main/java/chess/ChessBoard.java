@@ -11,6 +11,7 @@ import java.util.Objects;
  */
 public class ChessBoard {
     private ChessPiece[][] squares = new ChessPiece[8][8];
+
     public ChessBoard() {
     }
 
@@ -21,7 +22,6 @@ public class ChessBoard {
      * @param piece    the piece to add
      */
     public void addPiece(ChessPosition position, ChessPiece piece) {
-
         squares[position.getRow()][position.getColumn()] = piece;
     }
 
@@ -33,7 +33,7 @@ public class ChessBoard {
      * position
      */
     public ChessPiece getPiece(ChessPosition position) {
-        return board.get(position);
+        return squares[position.getRow()][position.getColumn()];
     }
 
     /**

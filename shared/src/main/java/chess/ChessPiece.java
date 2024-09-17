@@ -1,5 +1,6 @@
 package chess;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 /**
@@ -17,12 +18,7 @@ public class ChessPiece {
      * The various different chess piece options
      */
     public enum PieceType {
-        KING,
-        QUEEN,
-        BISHOP,
-        KNIGHT,
-        ROOK,
-        PAWN
+        KING, QUEEN, BISHOP, KNIGHT, ROOK, PAWN
     }
 
     /**
@@ -47,6 +43,65 @@ public class ChessPiece {
      * @return Collection of valid moves
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
-        throw new RuntimeException("Not implemented");
+        ChessPiece piece = board.getPiece(myPosition);
+        Collection<ChessMove> moves = new ArrayList<>();
+
+        if (piece == null) {
+            return moves;
+        }
+
+        switch (piece.getPieceType()) {
+            case PAWN:
+                // Implement pawn move logic
+                addPawnMoves(board, myPosition, moves);
+                break;
+            case ROOK:
+                // Implement rook move logic
+                addRookMoves(board, myPosition, moves);
+                break;
+            case BISHOP:
+                // Implement bishop move logic
+                addBishopMoves(board, myPosition, moves);
+                break;
+            case KNIGHT:
+                // Implement knight move logic
+                addKnightMoves(board, myPosition, moves);
+                break;
+            case QUEEN:
+                // Implement queen move logic
+                addQueenMoves(board, myPosition, moves);
+                break;
+            case KING:
+                // Implement king move logic
+                addKingMoves(board, myPosition, moves);
+                break;
+            default:
+                throw new IllegalStateException("Unexpected piece type: " + piece.getType());
+        }
+        // Example methods for adding specific piece moves
+
+        private void addPawnMoves (ChessBoard board, ChessPosition position, List < ChessMove > moves){
+            // Implement pawn movement logic here
+        }
+
+        private void addRookMoves (ChessBoard board, ChessPosition position, List < ChessMove > moves){
+            // Implement rook movement logic here
+        }
+
+        private void addBishopMoves (ChessBoard board, ChessPosition position, List < ChessMove > moves){
+            // Implement bishop movement logic here
+        }
+
+        private void addKnightMoves (ChessBoard board, ChessPosition position, List < ChessMove > moves){
+            // Implement knight movement logic here
+        }
+
+        private void addQueenMoves (ChessBoard board, ChessPosition position, List < ChessMove > moves){
+            // Implement queen movement logic here
+        }
+
+        private void addKingMoves (ChessBoard board, ChessPosition position, List < ChessMove > moves){
+            // Implement king movement logic here
+        }
     }
 }
