@@ -39,8 +39,20 @@ public class ChessBoard {
     /**
      * Sets the board to the default starting board
      * (How the game of chess normally starts)
+     * <p></p>
+     * Chess is set up in the following order:
+     * WHITE
+     * BLACK
      */
     public void resetBoard() {
-        throw new RuntimeException("Not implemented");
+
+        for (int i = 0; i < 8; i++) {
+            Arrays.fill(squares[i], null);
+        }
+
+        for (int i = 0; i < 8; i++) {
+            squares[1][i] = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN);
+            squares[6][i] = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.PAWN);
+        }
     }
 }
