@@ -11,7 +11,14 @@ import java.util.Collection;
  */
 public class ChessPiece {
 
+    private ChessGame.TeamColor pieceColor;
+    private PieceType type;
+
     public ChessPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
+
+        this.pieceColor = pieceColor;
+        this.type = type;
+
     }
 
     /**
@@ -25,14 +32,14 @@ public class ChessPiece {
      * @return Which team this chess piece belongs to
      */
     public ChessGame.TeamColor getTeamColor() {
-        throw new RuntimeException("Not implemented");
+        return this.pieceColor;
     }
 
     /**
      * @return which type of chess piece this piece is
      */
     public PieceType getPieceType() {
-        throw new RuntimeException("Not implemented");
+        return this.type;
     }
 
     /**
@@ -43,65 +50,35 @@ public class ChessPiece {
      * @return Collection of valid moves
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
-        ChessPiece piece = board.getPiece(myPosition);
         Collection<ChessMove> moves = new ArrayList<>();
+        ChessPiece piece = board.getPiece(myPosition);
 
         if (piece == null) {
-            return moves;
+            return moves; //No Piece
         }
 
         switch (piece.getPieceType()) {
             case PAWN:
-                // Implement pawn move logic
                 addPawnMoves(board, myPosition, moves);
                 break;
             case ROOK:
-                // Implement rook move logic
                 addRookMoves(board, myPosition, moves);
                 break;
             case BISHOP:
-                // Implement bishop move logic
                 addBishopMoves(board, myPosition, moves);
                 break;
             case KNIGHT:
-                // Implement knight move logic
                 addKnightMoves(board, myPosition, moves);
                 break;
             case QUEEN:
-                // Implement queen move logic
                 addQueenMoves(board, myPosition, moves);
                 break;
             case KING:
-                // Implement king move logic
                 addKingMoves(board, myPosition, moves);
                 break;
             default:
-                throw new IllegalStateException("Unexpected piece type: " + piece.getType());
+                throw new IllegalStateException("Unexpected piece type: " + piece);
         }
-        // Example methods for adding specific piece moves
-
-        private void addPawnMoves (ChessBoard board, ChessPosition position, List < ChessMove > moves){
-            // Implement pawn movement logic here
-        }
-
-        private void addRookMoves (ChessBoard board, ChessPosition position, List < ChessMove > moves){
-            // Implement rook movement logic here
-        }
-
-        private void addBishopMoves (ChessBoard board, ChessPosition position, List < ChessMove > moves){
-            // Implement bishop movement logic here
-        }
-
-        private void addKnightMoves (ChessBoard board, ChessPosition position, List < ChessMove > moves){
-            // Implement knight movement logic here
-        }
-
-        private void addQueenMoves (ChessBoard board, ChessPosition position, List < ChessMove > moves){
-            // Implement queen movement logic here
-        }
-
-        private void addKingMoves (ChessBoard board, ChessPosition position, List < ChessMove > moves){
-            // Implement king movement logic here
-        }
+        return moves;
     }
 }
