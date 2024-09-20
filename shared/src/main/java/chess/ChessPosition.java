@@ -32,6 +32,7 @@ public class ChessPosition {
      * @param o Compare this position to
      * @Return True if both positions are the same row and column
      */
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -47,6 +48,9 @@ public class ChessPosition {
 
     @Override
     public String toString() {
-        return "Row: " + row + ", Column: " + column;
+        return "ChessPosition{" +
+                "row=" + row +
+                ", column=" + column +
+                '}';
     }
 }

@@ -2,6 +2,7 @@ package chess;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Objects;
 
 /**
  * Represents a single chess piece
@@ -64,16 +65,16 @@ public class ChessPiece {
                 addRookMoves(board, myPosition, moves);
                 break;
             case BISHOP:
-                // addBishopMoves(board, myPosition, moves);
+                addBishopMoves(board, myPosition, moves);
                 break;
             case KNIGHT:
-                // addKnightMoves(board, myPosition, moves);
+                addKnightMoves(board, myPosition, moves);
                 break;
             case QUEEN:
-                // addQueenMoves(board, myPosition, moves);
+                addQueenMoves(board, myPosition, moves);
                 break;
             case KING:
-                // addKingMoves(board, myPosition, moves);
+                addKingMoves(board, myPosition, moves);
                 break;
             default:
                 throw new IllegalStateException("Error: Unexpected piece type: " + piece);
@@ -91,8 +92,8 @@ public class ChessPiece {
         ChessPosition forwardPosition = new ChessPosition(row + direction, col);
         if (isPositionValid(board, forwardPosition) && board.getPiece(forwardPosition) == null) {
             // Check for promotion (reaching the last rank)
-            if ((this.pieceColor == ChessGame.TeamColor.WHITE && row + direction == 7) ||
-                    (this.pieceColor == ChessGame.TeamColor.BLACK && row + direction == 0)) {
+            if ((this.pieceColor == ChessGame.TeamColor.WHITE && row + direction == 8) ||
+                    (this.pieceColor == ChessGame.TeamColor.BLACK && row + direction == 1)) {
                 // Add all possible promotion options (Queen, Rook, Bishop, Knight)
                 moves.add(new ChessMove(myPosition, forwardPosition, ChessPiece.PieceType.QUEEN));
                 moves.add(new ChessMove(myPosition, forwardPosition, ChessPiece.PieceType.ROOK));
@@ -105,8 +106,8 @@ public class ChessPiece {
         }
 
         // INITIAL MOVE - MOVE TWO SQUARES IF NOT BLOCKED
-        if ((this.pieceColor == ChessGame.TeamColor.WHITE && row == 1) ||
-                (this.pieceColor == ChessGame.TeamColor.BLACK && row == 6)) {
+        if ((this.pieceColor == ChessGame.TeamColor.WHITE && row == 2) ||
+                (this.pieceColor == ChessGame.TeamColor.BLACK && row == 7)) {
             ChessPosition forwardOneStep = new ChessPosition(row + direction, col);
             ChessPosition twoStepsForward = new ChessPosition(row + 2 * direction, col);
             if (isPositionValid(board, forwardOneStep) && isPositionValid(board, twoStepsForward) &&
@@ -116,26 +117,46 @@ public class ChessPiece {
         }
 
         // CAPTURE LEFT
-        if (col > 0) {  // Prevent out of bounds on the left
+        if (col > 1) {  // Prevent out of bounds on the left
             ChessPosition captureLeft = new ChessPosition(row + direction, col - 1);
             if (isPositionValid(board, captureLeft) && board.getPiece(captureLeft) != null &&
                     board.getPiece(captureLeft).getTeamColor() != this.pieceColor) {
-                moves.add(new ChessMove(myPosition, captureLeft, null));
+                if ((this.pieceColor == ChessGame.TeamColor.WHITE && row + direction == 8) ||
+                        (this.pieceColor == ChessGame.TeamColor.BLACK && row + direction == 1)) {
+                    // Add all possible promotion options (Queen, Rook, Bishop, Knight)
+                    moves.add(new ChessMove(myPosition, captureLeft, ChessPiece.PieceType.QUEEN));
+                    moves.add(new ChessMove(myPosition, captureLeft, ChessPiece.PieceType.ROOK));
+                    moves.add(new ChessMove(myPosition, captureLeft, ChessPiece.PieceType.BISHOP));
+                    moves.add(new ChessMove(myPosition, captureLeft, ChessPiece.PieceType.KNIGHT));
+                } else {
+                    // Normal pawn forward move
+                    moves.add(new ChessMove(myPosition, captureLeft, null));
+                }
             }
         }
 
         // CAPTURE RIGHT
-        if (col < 7) {  // Prevent out of bounds on the right
+        if (col < 8) {  // Prevent out of bounds on the right
             ChessPosition captureRight = new ChessPosition(row + direction, col + 1);
             if (isPositionValid(board, captureRight) && board.getPiece(captureRight) != null &&
                     board.getPiece(captureRight).getTeamColor() != this.pieceColor) {
-                moves.add(new ChessMove(myPosition, captureRight, null));
+                if ((this.pieceColor == ChessGame.TeamColor.WHITE && row + direction == 8) ||
+                        (this.pieceColor == ChessGame.TeamColor.BLACK && row + direction == 1)) {
+                    // Add all possible promotion options (Queen, Rook, Bishop, Knight)
+                    moves.add(new ChessMove(myPosition, captureRight, ChessPiece.PieceType.QUEEN));
+                    moves.add(new ChessMove(myPosition, captureRight, ChessPiece.PieceType.ROOK));
+                    moves.add(new ChessMove(myPosition, captureRight, ChessPiece.PieceType.BISHOP));
+                    moves.add(new ChessMove(myPosition, captureRight, ChessPiece.PieceType.KNIGHT));
+                } else {
+                    // Normal pawn forward move
+                    moves.add(new ChessMove(myPosition, captureRight, null));
+                }
             }
         }
     }
 
     private boolean isPositionValid(ChessBoard board, ChessPosition pos) {
-        return pos.getRow() >= 0 && pos.getRow() < 8 && pos.getColumn() >= 0 && pos.getColumn() < 8;
+        return pos.getRow() >= 1 && pos.getRow() < 9 && pos.getColumn() >= 1 && pos.getColumn() < 9;
     }
 
     private void addRookMoves(ChessBoard board, ChessPosition myPosition, Collection<ChessMove> moves) {
@@ -206,4 +227,24 @@ public class ChessPiece {
         addStraightLineMoves(board, myPosition, moves, rowStep, colStep);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ChessPiece that = (ChessPiece) o;
+        return pieceColor == that.pieceColor && type == that.type;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(pieceColor, type);
+    }
+
+    @Override
+    public String toString() {
+        return "ChessPiece{" +
+                "pieceColor=" + pieceColor +
+                ", type=" + type +
+                "}\n";
+    }
 }
