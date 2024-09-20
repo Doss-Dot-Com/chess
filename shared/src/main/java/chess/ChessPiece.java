@@ -208,7 +208,6 @@ public class ChessPiece {
     private void addStraightLineMoves(ChessBoard board, ChessPosition myPosition, Collection<ChessMove> moves, int rowStep, int colStep) {
         int row = myPosition.getRow();
         int col = myPosition.getColumn();
-
         while (true) {
             row += rowStep;
             col += colStep;
@@ -216,10 +215,16 @@ public class ChessPiece {
             if (!isPositionValid(board, newPos)) {
                 break;
             }
-            moves.add(new ChessMove(myPosition, newPos, null));
             if (board.getPiece(newPos) != null) {
-                break;
+                if (board.getPiece(newPos).getTeamColor() == this.pieceColor) {
+                    break;
+                }
+                if (board.getPiece(newPos).getTeamColor() != this.pieceColor) {
+                    moves.add(new ChessMove(myPosition, newPos, null));
+                    break;
+                }
             }
+            moves.add(new ChessMove(myPosition, newPos, null));
         }
     }
 
