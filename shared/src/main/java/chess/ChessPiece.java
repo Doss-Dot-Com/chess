@@ -90,27 +90,47 @@ public class ChessPiece {
         // PAWN MOVE FORWARD LOGIC
         ChessPosition forwardPosition = new ChessPosition(row + direction, col);
         if (isPositionValid(board, forwardPosition) && board.getPiece(forwardPosition) == null) {
-            moves.add(new ChessMove(myPosition, forwardPosition, null));
+            // Check for promotion (reaching the last rank)
+            if ((this.pieceColor == ChessGame.TeamColor.WHITE && row + direction == 7) ||
+                    (this.pieceColor == ChessGame.TeamColor.BLACK && row + direction == 0)) {
+                // Add all possible promotion options (Queen, Rook, Bishop, Knight)
+                moves.add(new ChessMove(myPosition, forwardPosition, ChessPiece.PieceType.QUEEN));
+                moves.add(new ChessMove(myPosition, forwardPosition, ChessPiece.PieceType.ROOK));
+                moves.add(new ChessMove(myPosition, forwardPosition, ChessPiece.PieceType.BISHOP));
+                moves.add(new ChessMove(myPosition, forwardPosition, ChessPiece.PieceType.KNIGHT));
+            } else {
+                // Normal pawn forward move
+                moves.add(new ChessMove(myPosition, forwardPosition, null));
+            }
         }
 
         // INITIAL MOVE - MOVE TWO SQUARES IF NOT BLOCKED
         if ((this.pieceColor == ChessGame.TeamColor.WHITE && row == 1) ||
                 (this.pieceColor == ChessGame.TeamColor.BLACK && row == 6)) {
+            ChessPosition forwardOneStep = new ChessPosition(row + direction, col);
             ChessPosition twoStepsForward = new ChessPosition(row + 2 * direction, col);
-            if (isPositionValid(board, twoStepsForward) && board.getPiece(twoStepsForward) == null) {
+            if (isPositionValid(board, forwardOneStep) && isPositionValid(board, twoStepsForward) &&
+                    board.getPiece(forwardOneStep) == null && board.getPiece(twoStepsForward) == null) {
                 moves.add(new ChessMove(myPosition, twoStepsForward, null));
             }
         }
 
-        ChessPosition captureLeft = new ChessPosition(row + direction, col -1);
-        ChessPosition captureRight = new ChessPosition(row + direction, col -1);
-
-        if (isPositionValid(board, captureLeft) && board.getPiece(captureLeft) != null && board.getPiece(captureLeft).getTeamColor() != this.pieceColor) {
-            moves.add(new ChessMove(myPosition, captureLeft, null));
+        // CAPTURE LEFT
+        if (col > 0) {  // Prevent out of bounds on the left
+            ChessPosition captureLeft = new ChessPosition(row + direction, col - 1);
+            if (isPositionValid(board, captureLeft) && board.getPiece(captureLeft) != null &&
+                    board.getPiece(captureLeft).getTeamColor() != this.pieceColor) {
+                moves.add(new ChessMove(myPosition, captureLeft, null));
+            }
         }
 
-        if (isPositionValid(board, captureRight) && board.getPiece(captureRight) != null && board.getPiece(captureRight).getTeamColor() != this.pieceColor) {
-            moves.add(new ChessMove(myPosition, captureRight, null));
+        // CAPTURE RIGHT
+        if (col < 7) {  // Prevent out of bounds on the right
+            ChessPosition captureRight = new ChessPosition(row + direction, col + 1);
+            if (isPositionValid(board, captureRight) && board.getPiece(captureRight) != null &&
+                    board.getPiece(captureRight).getTeamColor() != this.pieceColor) {
+                moves.add(new ChessMove(myPosition, captureRight, null));
+            }
         }
     }
 
