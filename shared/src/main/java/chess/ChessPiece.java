@@ -15,7 +15,6 @@ public class ChessPiece {
     private PieceType type;
 
     public ChessPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
-
         this.pieceColor = pieceColor;
         this.type = type;
 
@@ -62,23 +61,61 @@ public class ChessPiece {
                 addPawnMoves(board, myPosition, moves);
                 break;
             case ROOK:
-                addRookMoves(board, myPosition, moves);
+                // addRookMoves(board, myPosition, moves);
                 break;
             case BISHOP:
-                addBishopMoves(board, myPosition, moves);
+                // addBishopMoves(board, myPosition, moves);
                 break;
             case KNIGHT:
-                addKnightMoves(board, myPosition, moves);
+                // addKnightMoves(board, myPosition, moves);
                 break;
             case QUEEN:
-                addQueenMoves(board, myPosition, moves);
+                // addQueenMoves(board, myPosition, moves);
                 break;
             case KING:
-                addKingMoves(board, myPosition, moves);
+                // addKingMoves(board, myPosition, moves);
                 break;
             default:
-                throw new IllegalStateException("Unexpected piece type: " + piece);
+                throw new IllegalStateException("Error: Unexpected piece type: " + piece);
         }
         return moves;
     }
+
+    //PAWN MOVES
+    private void addPawnMoves(ChessBoard board, ChessPosition myPosition, Collection<ChessMove> moves) {
+        int row = myPosition.getRow();
+        int col = myPosition.getColumn();
+        int direction = (this.pieceColor == ChessGame.TeamColor.WHITE) ? 1 : -1;
+
+        // PAWN MOVE FORWARD LOGIC
+        ChessPosition forwardPosition = new ChessPosition(row + direction, col);
+        if (isPositionValid(board, forwardPosition) && board.getPiece(forwardPosition) == null) {
+            moves.add(new ChessMove(myPosition, forwardPosition, null));
+        }
+
+        // INITIAL MOVE - MOVE TWO SQUARES IF NOT BLOCKED
+        if ((this.pieceColor == ChessGame.TeamColor.WHITE && row == 1) ||
+                (this.pieceColor == ChessGame.TeamColor.BLACK && row == 6)) {
+            ChessPosition twoStepsForward = new ChessPosition(row + 2 * direction, col);
+            if (isPositionValid(board, twoStepsForward) && board.getPiece(twoStepsForward) == null) {
+                moves.add(new ChessMove(myPosition, twoStepsForward, null));
+            }
+        }
+
+        ChessPosition captureLeft = new ChessPosition(row + direction, col -1);
+        ChessPosition captureRight = new ChessPosition(row + direction, col -1);
+
+        if (isPositionValid(board, captureLeft) && board.getPiece(captureLeft) != null && board.getPiece(captureLeft).getTeamColor() != this.pieceColor) {
+            moves.add(new ChessMove(myPosition, captureLeft, null));
+        }
+
+        if (isPositionValid(board, captureRight) && board.getPiece(captureRight) != null && board.getPiece(captureRight).getTeamColor() != this.pieceColor) {
+            moves.add(new ChessMove(myPosition, captureRight, null));
+        }
+    }
+
+    private boolean isPositionValid(ChessBoard board, ChessPosition pos) {
+        return pos.getRow() >= 0 && pos.getRow() < 8 && pos.getColumn() >= 0 && pos.getColumn() < 8;
+    }
+
 }
