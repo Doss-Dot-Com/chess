@@ -61,7 +61,7 @@ public class ChessPiece {
                 addPawnMoves(board, myPosition, moves);
                 break;
             case ROOK:
-                // addRookMoves(board, myPosition, moves);
+                addRookMoves(board, myPosition, moves);
                 break;
             case BISHOP:
                 // addBishopMoves(board, myPosition, moves);
@@ -136,6 +136,74 @@ public class ChessPiece {
 
     private boolean isPositionValid(ChessBoard board, ChessPosition pos) {
         return pos.getRow() >= 0 && pos.getRow() < 8 && pos.getColumn() >= 0 && pos.getColumn() < 8;
+    }
+
+    private void addRookMoves(ChessBoard board, ChessPosition myPosition, Collection<ChessMove> moves) {
+        addStraightLineMoves(board, myPosition, moves, 1, 0);
+        addStraightLineMoves(board, myPosition, moves, -1, 0);
+        addStraightLineMoves(board, myPosition, moves, 0, 1);
+        addStraightLineMoves(board, myPosition, moves, 0, -1);
+    }
+
+    private void addBishopMoves(ChessBoard board, ChessPosition myPosition, Collection<ChessMove> moves) {
+        addDiagonalMoves(board, myPosition, moves, 1, 1);
+        addDiagonalMoves(board, myPosition, moves, 1, -1);
+        addDiagonalMoves(board, myPosition, moves, -1, 1);
+        addDiagonalMoves(board, myPosition, moves, -1, -1);
+
+    }
+
+    private void addKnightMoves(ChessBoard board, ChessPosition myPosition, Collection<ChessMove> moves) {
+        int[][] knightMoves = {
+                {2, 1}, {2, -1}, {-2, 1}, {-2, -1},
+                {1, 2}, {1, -2}, {-1, 2}, {-1, -2}
+        };
+        for (int[] move: knightMoves) {
+            ChessPosition newPos = new ChessPosition(myPosition.getRow() + move[0], myPosition.getColumn() + move[1] );
+            if (isPositionValid(board, newPos) && (board.getPiece(newPos) == null || board.getPiece(newPos).getTeamColor() != this.pieceColor)) {
+                moves.add(new ChessMove(myPosition, newPos, null));
+            }
+        }
+    }
+
+    private void addQueenMoves(ChessBoard board, ChessPosition myPosition, Collection<ChessMove> moves) {
+        addRookMoves(board, myPosition, moves);
+        addBishopMoves(board, myPosition, moves);
+    }
+
+    private void addKingMoves(ChessBoard board, ChessPosition myPosition, Collection<ChessMove> moves) {
+        int[][] kingMoves = {
+                {1, 0}, {-1, 0}, {0, 1}, {0, -1},
+                {1, 1}, {1, -1}, {-1, 1}, {-1, -1}
+        };
+        for (int[] move : kingMoves) {
+            ChessPosition newPos = new ChessPosition(myPosition.getRow() + move[0], myPosition.getColumn() + move[1]);
+            if (isPositionValid(board, newPos) && (board.getPiece(newPos) == null || board.getPiece(newPos).getTeamColor() != this.pieceColor)) {
+                moves.add(new ChessMove(myPosition, newPos, null));
+            }
+        }
+    }
+
+    private void addStraightLineMoves(ChessBoard board, ChessPosition myPosition, Collection<ChessMove> moves, int rowStep, int colStep) {
+        int row = myPosition.getRow();
+        int col = myPosition.getColumn();
+
+        while (true) {
+            row += rowStep;
+            col += colStep;
+            ChessPosition newPos = new ChessPosition(row, col);
+            if (!isPositionValid(board, newPos)) {
+                break;
+            }
+            moves.add(new ChessMove(myPosition, newPos, null));
+            if (board.getPiece(newPos) != null) {
+                break;
+            }
+        }
+    }
+
+    private void addDiagonalMoves(ChessBoard board, ChessPosition myPosition, Collection<ChessMove> moves, int rowStep, int colStep) {
+        addStraightLineMoves(board, myPosition, moves, rowStep, colStep);
     }
 
 }
