@@ -3,6 +3,7 @@ package chess;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Manages the entire chess game, including moves, check, checkmate, and stalemate.
@@ -28,8 +29,10 @@ public class ChessGame {
 
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
         ChessPiece piece = board.getPiece(startPosition);
-        if (piece == null || piece.getTeamColor() != teamTurn) {
-            return null; // No piece or wrong team's turn
+
+        // Return an empty collection if no piece exists at the position or if it's not the team's turn
+        if (piece == null) {
+            return new ArrayList<>();  // Return an empty list instead of null
         }
 
         Collection<ChessMove> potentialMoves = piece.pieceMoves(board, startPosition);
@@ -188,6 +191,27 @@ public class ChessGame {
 
     public enum TeamColor {
         WHITE, BLACK
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ChessGame chessGame = (ChessGame) o;
+        return Objects.equals(board, chessGame.board) && teamTurn == chessGame.teamTurn;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(board, teamTurn);
+    }
+
+    @Override
+    public String toString() {
+        return "ChessGame{" +
+                "board=" + board +
+                ", teamTurn=" + teamTurn +
+                '}';
     }
 }
 
