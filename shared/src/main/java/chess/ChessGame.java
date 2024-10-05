@@ -81,8 +81,13 @@ public class ChessGame {
             throw new InvalidMoveException("Error: Not Legal");
         }
 
+        if (move.getPromotionPiece() != null) {
+            ChessPiece promotionPiece = new ChessPiece(piece.getTeamColor(), move.getPromotionPiece());
+            board.addPiece(end, promotionPiece);
+        } else {
+            board.addPiece(end, piece);
+        }
         // Perform the move
-        board.addPiece(end, piece);
         board.addPiece(start, null);
 
         // Switch the turn to the other team
