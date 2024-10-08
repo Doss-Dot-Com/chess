@@ -1,5 +1,7 @@
 package chess;
 
+/* Git Commit Phase 0 to Phase 1 Transition */
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
