@@ -1,5 +1,5 @@
 package chess;
-
+///Initialize Phase 3
 import java.util.Arrays;
 import java.util.Objects;
 
