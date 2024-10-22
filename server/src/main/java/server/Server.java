@@ -1,25 +1,18 @@
 package server;
 
-import spark.*;
+import dataaccess.InMemoryDataAccess;
+import service.UserService;
 
 public class Server {
+    public static void main(String[] args) {
+        InMemoryDataAccess dataAccess = new InMemoryDataAccess();
+        UserService userService = new UserService(dataAccess);
+        UserHandler userHandler = new UserHandler(userService);
 
-    public int run(int desiredPort) {
-        Spark.port(desiredPort);
+        userHandler.register();
+        userHandler.login();
+        userHandler.logout();
 
-        Spark.staticFiles.location("web");
-
-        // Register your endpoints and handle exceptions here.
-
-        //This line initializes the server and can be removed once you have a functioning endpoint 
-        Spark.init();
-
-        Spark.awaitInitialization();
-        return Spark.port();
-    }
-
-    public void stop() {
-        Spark.stop();
-        Spark.awaitStop();
+        System.out.println("Server started on port 8080");
     }
 }
