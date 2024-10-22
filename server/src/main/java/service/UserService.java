@@ -11,7 +11,12 @@ public class UserService {
         this.dataAccess = dataAccess;
     }
 
-    public AuthData register(UserData user) throws DataAccessException {
+    public AuthData register(UserData user) throws DataAccessException, UserAlreadyExistsException {
+        // Check if the user already exists
+        if (dataAccess.getUser(user.username()) != null) {
+            throw new UserAlreadyExistsException("User already exists");
+        }
+
         dataAccess.createUser(user);
         String authToken = UUID.randomUUID().toString();
         AuthData auth = new AuthData(authToken, user.username());
@@ -35,4 +40,5 @@ public class UserService {
         dataAccess.deleteAuth(authToken);
     }
 }
+
 

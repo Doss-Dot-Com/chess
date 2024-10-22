@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import service.UserService;
 import model.*;
 import dataaccess.DataAccessException;
+import service.UserAlreadyExistsException;
 import model.ErrorResponse;
 
 import static spark.Spark.*;
@@ -23,6 +24,9 @@ public class UserHandler {
                 AuthData auth = userService.register(user);
                 res.status(200);
                 return gson.toJson(auth);
+            } catch (UserAlreadyExistsException e) {
+                res.status(403);  // User already exists, so return 403 Forbidden
+                return gson.toJson(new ErrorResponse("Error: User already exists"));
             } catch (DataAccessException e) {
                 res.status(400);
                 return gson.toJson(new ErrorResponse("Error: bad request"));
