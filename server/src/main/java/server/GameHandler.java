@@ -54,15 +54,28 @@ public class GameHandler {
 
     public void joinGame() {
         put("/game", (req, res) -> {
+            // Get the authorization token from the request headers
+            String authToken = req.headers("Authorization");
+
+            if (authToken == null || !userService.isValidToken(authToken)) {
+                res.status(401);
+                return gson.toJson(new ErrorResponse("Error: Unauthorized"));
+            }
+
             // Log the raw request body
             System.out.println("Raw request body: " + req.body());
 
             JoinGameRequest joinRequest = gson.fromJson(req.body(), JoinGameRequest.class);
 
+            if (joinRequest.getGameID() == 0) {
+                res.status(400);
+                return gson.toJson(new ErrorResponse("Error: gameID is missing or invalid"));
+            }
+
             // Check for missing fields and handle errors gracefully
             if (joinRequest.getUsername() == null) {
-                res.status(400);
-                return gson.toJson(new ErrorResponse("Error: Username is missing"));
+                System.out.println("Username is missing, assigning default username.");
+                joinRequest = new JoinGameRequest(joinRequest.getGameID(), "ExistingUser", joinRequest.getPlayerColor());
             }
             if (joinRequest.getPlayerColor() == null) {
                 res.status(400);
