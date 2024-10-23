@@ -30,40 +30,33 @@ public class GameService {
     }
 
     public void joinGame(JoinGameRequest joinRequest) throws DataAccessException {
-        // Get the game from the data access layer
         GameData game = dataAccess.getGame(joinRequest.getGameID());
 
         if (game == null) {
             throw new DataAccessException("Game not found");
         }
 
-        // Check if playerColor is provided, if it's null, we need to throw an error
         String playerColor = joinRequest.getPlayerColor();
         if (playerColor == null) {
-            throw new DataAccessException("Player color is missing");
+            throw new DataAccessException("Player color not specified");
         }
 
-        String username = joinRequest.getUsername();
-        if (username == null) {
-            throw new DataAccessException("Username is missing");
-        }
-
-        // Check which color the player is joining as
+        // Ensure the user is assigned to the correct color, and the game is updated
         if (playerColor.equalsIgnoreCase("WHITE")) {
             if (game.getWhiteUsername() != null) {
-                throw new DataAccessException("White player slot already taken");
+                throw new IllegalArgumentException("White player slot already taken");
             }
-            game.setWhiteUsername(username);
+            game.setWhiteUsername(joinRequest.getUsername());
         } else if (playerColor.equalsIgnoreCase("BLACK")) {
             if (game.getBlackUsername() != null) {
-                throw new DataAccessException("Black player slot already taken");
+                throw new IllegalArgumentException("Black player slot already taken");
             }
-            game.setBlackUsername(username);
+            game.setBlackUsername(joinRequest.getUsername());
         } else {
             throw new DataAccessException("Invalid player color");
         }
 
-        // Update the game in memory
+        // Persist the updated game with the new player assigned
         dataAccess.updateGame(game);
     }
 }

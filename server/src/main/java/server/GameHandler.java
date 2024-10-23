@@ -74,7 +74,7 @@ public class GameHandler {
 
             // Check for missing fields and handle errors gracefully
             if (joinRequest.getUsername() == null) {
-                System.out.println("Username is missing, assigning default username.");
+                // System.out.println("Username is missing, assigning default username.");
                 joinRequest = new JoinGameRequest(joinRequest.getGameID(), "ExistingUser", joinRequest.getPlayerColor());
             }
             if (joinRequest.getPlayerColor() == null) {
@@ -86,8 +86,11 @@ public class GameHandler {
                 gameService.joinGame(joinRequest);
                 res.status(200);
                 return "{}";  // Empty JSON for success
+            } catch (IllegalArgumentException e) {
+                res.status(403);  // Forbidden when a player slot is already taken
+                return gson.toJson(new ErrorResponse(e.getMessage()));
             } catch (DataAccessException e) {
-                res.status(400);
+                res.status(400);  // Bad request for other errors
                 return gson.toJson(new ErrorResponse(e.getMessage()));
             }
         });
