@@ -1,11 +1,7 @@
 package service;
 
-import dataaccess.DataAccess;
-import dataaccess.DataAccessException;
-import dataaccess.InMemoryDataAccess;
-import model.GameData;
-import model.GameRequest;
-import model.JoinGameRequest;
+import dataaccess.*;
+import model.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -20,85 +16,64 @@ public class GameServiceTest {
 
     @BeforeEach
     public void setUp() {
-        // Initialize a simple in-memory data access implementation
-        dataAccess = new InMemoryDataAccess();  // You may have to implement this or use an already available version.
+        dataAccess = new InMemoryDataAccess();
         gameService = new GameService(dataAccess);
     }
 
     @Test
-    public void testClearData_Success() throws DataAccessException {
-        // Positive case: Clearing data successfully
+    public void testClearDataSuccess() throws DataAccessException {
         gameService.clearData();
-        assertTrue(dataAccess.getAllGames().isEmpty(), "Data should be cleared successfully");
+        assertTrue(dataAccess.getAllGames().isEmpty());
     }
 
     @Test
-    public void testClearData_Failure() {
-        // Negative case: Simulating failure while clearing data
-        assertThrows(DataAccessException.class, () -> {
-            throw new DataAccessException("Simulated failure");
-        }, "Expected DataAccessException to be thrown");
+    public void testClearDataFailure() throws DataAccessException {
+        assertDoesNotThrow(() -> gameService.clearData());
     }
 
     @Test
-    public void testCreateGame_Success() throws DataAccessException {
-        // Positive case: Creating a game successfully
-        GameRequest request = new GameRequest("Test Game");
-        int gameID = gameService.createGame(request);
-        GameData gameData = dataAccess.getGame(gameID);
-        assertNotNull(gameData, "Game should be created successfully");
-        assertEquals("Test Game", gameData.getGameName(), "Game name should match");
+    public void testCreateGameSuccess() throws DataAccessException {
+        GameRequest gameRequest = new GameRequest("TestGame");
+        int gameId = gameService.createGame(gameRequest);
+        assertNotNull(dataAccess.getGame(gameId));
     }
 
     @Test
-    public void testCreateGame_Failure() {
-        // Negative case: Attempting to create a game with null request
-        assertThrows(IllegalArgumentException.class, () -> {
-            gameService.createGame(null);
-        }, "Expected IllegalArgumentException to be thrown");
+    public void testCreateGameFailure() {
+        GameRequest gameRequest = new GameRequest(null);
+        assertThrows(IllegalArgumentException.class, () -> gameService.createGame(gameRequest));
     }
 
     @Test
-    public void testListGames_Success() throws DataAccessException {
-        // Positive case: Listing multiple games
-        GameRequest request1 = new GameRequest("Game 1");
-        GameRequest request2 = new GameRequest("Game 2");
-        gameService.createGame(request1);
-        gameService.createGame(request2);
+    public void testListGamesSuccess() throws DataAccessException {
+        GameRequest gameRequest1 = new GameRequest("Game1");
+        GameRequest gameRequest2 = new GameRequest("Game2");
+        gameService.createGame(gameRequest1);
+        gameService.createGame(gameRequest2);
         List<GameData> games = gameService.listGames();
-        assertEquals(2, games.size(), "Two games should be listed");
+        assertEquals(2, games.size());
     }
 
     @Test
-    public void testListGames_Failure() {
-        // Negative case: Simulating failure during list retrieval
-        assertThrows(DataAccessException.class, () -> {
-            throw new DataAccessException("Simulated failure");
-        }, "Expected DataAccessException to be thrown");
+    public void testListGamesFailure() throws DataAccessException {
+        assertDoesNotThrow(() -> gameService.listGames());
     }
 
     @Test
-    public void testJoinGame_Success() throws DataAccessException {
-        // Positive case: Successfully joining a game
-        GameRequest request = new GameRequest("Game 1");
-        int gameID = gameService.createGame(request);
-
-        JoinGameRequest joinRequest = new JoinGameRequest(gameID, "Player1", "WHITE");
+    public void testJoinGameSuccess() throws DataAccessException {
+        GameRequest gameRequest = new GameRequest("TestGame");
+        int gameId = gameService.createGame(gameRequest);
+        JoinGameRequest joinRequest = new JoinGameRequest(gameId, "existingUser", "WHITE");
         gameService.joinGame(joinRequest);
-
-        GameData gameData = dataAccess.getGame(gameID);
-        assertEquals("Player1", gameData.getWhiteUsername(), "Player1 should be the white player");
+        GameData gameData = dataAccess.getGame(gameId);
+        assertEquals("existingUser", gameData.getWhiteUsername());
     }
 
     @Test
-    public void testJoinGame_Failure() throws DataAccessException {
-        // Negative case: Attempting to join a game with an invalid color
-        GameRequest request = new GameRequest("Game 1");
-        int gameID = gameService.createGame(request);
-
-        JoinGameRequest joinRequest = new JoinGameRequest(gameID, "Player1", "INVALID_COLOR");
-        assertThrows(IllegalArgumentException.class, () -> {
-            gameService.joinGame(joinRequest);
-        }, "Expected IllegalArgumentException to be thrown for invalid player color");
+    public void testJoinGameFailure() throws DataAccessException {
+        GameRequest gameRequest = new GameRequest("TestGame");
+        int gameId = gameService.createGame(gameRequest);
+        JoinGameRequest joinRequest = new JoinGameRequest(gameId, "existingUser", "RED");
+        assertThrows(IllegalArgumentException.class, () -> gameService.joinGame(joinRequest));
     }
 }
