@@ -25,11 +25,14 @@ public class UserHandler {
                 res.status(200);
                 return gson.toJson(auth);
             } catch (UserAlreadyExistsException e) {
-                res.status(403);  // User already exists, so return 403 Forbidden
-                return gson.toJson(new ErrorResponse("Error: User already exists"));
+                res.status(403);  // User already exists
+                return gson.toJson(new ErrorResponse("Error: user already exists"));
+            } catch (IllegalArgumentException e) {
+                res.status(400);  // Bad request due to missing fields
+                return gson.toJson(new ErrorResponse("Error: missing or invalid fields"));
             } catch (DataAccessException e) {
-                res.status(400);
-                return gson.toJson(new ErrorResponse("Error: bad request"));
+                res.status(500);  // Internal server error
+                return gson.toJson(new ErrorResponse("Error: server error"));
             }
         });
     }

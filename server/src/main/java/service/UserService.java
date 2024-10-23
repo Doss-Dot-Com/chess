@@ -12,14 +12,19 @@ public class UserService {
     }
 
     public AuthData register(UserData user) throws DataAccessException, UserAlreadyExistsException {
-        // Check if the user already exists
-        if (dataAccess.getUser(user.username()) != null) {
-            throw new UserAlreadyExistsException("User already exists");
+        // Check if any required field is missing
+        if (user.username() == null || user.password() == null || user.email() == null) {
+            throw new IllegalArgumentException("Username, password, and email are required");
         }
 
+        // Check if the user already exists
+        if (dataAccess.getUser(user.username()) != null) {
+            throw new UserAlreadyExistsException("User with this username already exists");
+        }
+
+        // Proceed with registration
+        AuthData auth = new AuthData(UUID.randomUUID().toString(), user.username());
         dataAccess.createUser(user);
-        String authToken = UUID.randomUUID().toString();
-        AuthData auth = new AuthData(authToken, user.username());
         dataAccess.createAuth(auth);
         return auth;
     }
