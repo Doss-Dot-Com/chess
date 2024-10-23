@@ -1,7 +1,13 @@
 package dataaccess;
 
-import model.*;
-import java.util.*;
+import model.AuthData;
+import model.GameData;
+import model.UserData;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.ArrayList;
 
 public class InMemoryDataAccess implements DataAccess {
     private final Map<String, UserData> users = new HashMap<>();
@@ -10,9 +16,9 @@ public class InMemoryDataAccess implements DataAccess {
 
     @Override
     public void clear() throws DataAccessException {
-        users.clear();
-        games.clear();
-        authTokens.clear();
+        users.clear();     // Clear all users
+        games.clear();     // Clear all games
+        authTokens.clear(); // Clear all authentication tokens
     }
 
     @Override
@@ -30,7 +36,7 @@ public class InMemoryDataAccess implements DataAccess {
 
     @Override
     public void createGame(GameData game) throws DataAccessException {
-        games.put(game.gameID(), game);
+        games.put(game.getGameID(), game);
     }
 
     @Override
@@ -39,8 +45,18 @@ public class InMemoryDataAccess implements DataAccess {
     }
 
     @Override
+    public void updateGame(GameData game) throws DataAccessException {
+        games.put(game.getGameID(), game);
+    }
+
+    @Override
+    public List<GameData> getAllGames() throws DataAccessException {
+        return new ArrayList<>(games.values());
+    }
+
+    @Override
     public void createAuth(AuthData auth) throws DataAccessException {
-        authTokens.put(auth.authToken(), auth);
+        authTokens.put(auth.getAuthToken(), auth);
     }
 
     @Override
@@ -53,3 +69,7 @@ public class InMemoryDataAccess implements DataAccess {
         authTokens.remove(authToken);
     }
 }
+
+
+
+

@@ -1,7 +1,7 @@
 package model;
 
 public class ErrorResponse {
-    private final String message;
+    private String message;
 
     public ErrorResponse(String message) {
         this.message = message;
@@ -10,4 +10,9 @@ public class ErrorResponse {
     public String getMessage() {
         return message;
     }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
 }
+
