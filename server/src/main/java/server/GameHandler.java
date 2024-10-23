@@ -54,7 +54,6 @@ public class GameHandler {
 
     public void joinGame() {
         put("/game", (req, res) -> {
-            // Get the authorization token from the request headers
             String authToken = req.headers("Authorization");
 
             if (authToken == null || !userService.isValidToken(authToken)) {
@@ -72,29 +71,33 @@ public class GameHandler {
                 return gson.toJson(new ErrorResponse("Error: gameID is missing or invalid"));
             }
 
+            // Extract username from the authorization token
+            String username = userService.getUsernameFromToken(authToken);
+            joinRequest.setUsername(username);
+
             // Check for missing fields and handle errors gracefully
-            if (joinRequest.getUsername() == null) {
-                // System.out.println("Username is missing, assigning default username.");
-                joinRequest = new JoinGameRequest(joinRequest.getGameID(), "ExistingUser", joinRequest.getPlayerColor());
-            }
             if (joinRequest.getPlayerColor() == null) {
                 res.status(400);
                 return gson.toJson(new ErrorResponse("Error: Player color is missing"));
             }
 
             try {
+                // Try to join the game
                 gameService.joinGame(joinRequest);
                 res.status(200);
                 return "{}";  // Empty JSON for success
             } catch (IllegalArgumentException e) {
+                System.out.println("Caught exception: " + e.getMessage());
                 res.status(403);  // Forbidden when a player slot is already taken
-                return gson.toJson(new ErrorResponse(e.getMessage()));
+                return gson.toJson(new ErrorResponse(e.getMessage()));  // Include the error message in the response
             } catch (DataAccessException e) {
                 res.status(400);  // Bad request for other errors
                 return gson.toJson(new ErrorResponse(e.getMessage()));
             }
         });
     }
+
+
 
     public void listGames() {
         get("/game", (req, res) -> {
@@ -113,6 +116,26 @@ public class GameHandler {
             } catch (DataAccessException e) {
                 res.status(500);
                 return gson.toJson(new ErrorResponse("Error listing games"));
+            }
+        });
+    }
+
+    public void clearData() {
+        post("/clear", (req, res) -> {
+            String authToken = req.headers("Authorization");
+            if (authToken == null || !userService.isValidToken(authToken)) {
+                res.status(401);  // Unauthorized response
+                return gson.toJson(new ErrorResponse("Error: Unauthorized"));
+            }
+
+            // Clear operation
+            try {
+                gameService.clearData();
+                res.status(200);
+                return "{}";  // Success response
+            } catch (DataAccessException e) {
+                res.status(500);  // Internal server error
+                return gson.toJson(new ErrorResponse("Error: Server error"));
             }
         });
     }

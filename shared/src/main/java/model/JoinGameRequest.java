@@ -22,6 +22,11 @@ public class JoinGameRequest {
     public String getPlayerColor() {
         return playerColor;
     }
+
+    // Add this setter method to update the username
+    public void setUsername(String username) {
+        this.username = username;
+    }
 }
 
 

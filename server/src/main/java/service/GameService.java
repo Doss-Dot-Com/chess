@@ -16,6 +16,10 @@ public class GameService {
         this.dataAccess = dataAccess;
     }
 
+    public void clearData() throws DataAccessException {
+        dataAccess.clear();  // Clear the data in the database or in-memory storage
+    }
+
     // Method to create a new game
     public int createGame(GameRequest gameRequest) throws DataAccessException {
         int gameID = Math.abs(UUID.randomUUID().hashCode());  // Generate a positive game ID
@@ -29,35 +33,31 @@ public class GameService {
         return dataAccess.getAllGames();
     }
 
-    public void joinGame(JoinGameRequest joinRequest) throws DataAccessException {
-        GameData game = dataAccess.getGame(joinRequest.getGameID());
+    public void joinGame(JoinGameRequest request) throws DataAccessException {
+        GameData game = dataAccess.getGame(request.getGameID());
 
-        if (game == null) {
-            throw new DataAccessException("Game not found");
-        }
+        System.out.println("Joining game ID: " + request.getGameID() + " as " + request.getPlayerColor() + " with username: " + request.getUsername());
 
-        String playerColor = joinRequest.getPlayerColor();
-        if (playerColor == null) {
-            throw new DataAccessException("Player color not specified");
-        }
-
-        // Ensure the user is assigned to the correct color, and the game is updated
-        if (playerColor.equalsIgnoreCase("WHITE")) {
+        if (request.getPlayerColor().equalsIgnoreCase("WHITE")) {
+            System.out.println("Current whiteUsername: " + game.getWhiteUsername());
             if (game.getWhiteUsername() != null) {
+                System.out.println("White player slot already taken");
                 throw new IllegalArgumentException("White player slot already taken");
             }
-            game.setWhiteUsername(joinRequest.getUsername());
-        } else if (playerColor.equalsIgnoreCase("BLACK")) {
+            game.setWhiteUsername(request.getUsername());
+        } else if (request.getPlayerColor().equalsIgnoreCase("BLACK")) {
+            System.out.println("Current blackUsername: " + game.getBlackUsername());
             if (game.getBlackUsername() != null) {
+                System.out.println("Black player slot already taken");
                 throw new IllegalArgumentException("Black player slot already taken");
             }
-            game.setBlackUsername(joinRequest.getUsername());
+            game.setBlackUsername(request.getUsername());
         } else {
-            throw new DataAccessException("Invalid player color");
+            throw new IllegalArgumentException("Invalid player color");
         }
 
-        // Persist the updated game with the new player assigned
-        dataAccess.updateGame(game);
+        // After game updated
+        System.out.println("Game updated! White: " + game.getWhiteUsername() + ", Black: " + game.getBlackUsername());
     }
 }
 

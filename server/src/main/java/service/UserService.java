@@ -11,12 +11,20 @@ public class UserService {
         this.dataAccess = dataAccess;
     }
 
+    // This method extracts the username based on the provided auth token
+    public String getUsernameFromToken(String authToken) throws DataAccessException {
+        AuthData authData = dataAccess.getAuth(authToken);
+        if (authData == null) {
+            throw new IllegalArgumentException("Invalid auth token");
+        }
+        return authData.getUsername();  // Assuming AuthData has a method getUsername()
+    }
+
     public boolean isValidToken(String authToken) {
         try {
-            AuthData authData = dataAccess.getAuth(authToken);
-            return authData != null; // Token is valid if authData is found
+            return dataAccess.getAuth(authToken) != null;
         } catch (DataAccessException e) {
-            return false; // Invalid token if there's an exception
+            return false;
         }
     }
 
