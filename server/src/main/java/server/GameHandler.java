@@ -42,14 +42,20 @@ public class GameHandler {
             GameRequest gameRequest = gson.fromJson(req.body(), GameRequest.class);
             try {
                 int gameID = gameService.createGame(gameRequest);
-                res.status(200);
-                return gson.toJson(new GameResponse(gameID));
+                if (gameID > 0) {
+                    res.status(200);
+                    return gson.toJson(new GameResponse(gameID));  // Ensure gameID is returned in response
+                } else {
+                    res.status(500);
+                    return gson.toJson(new ErrorResponse("Error creating game"));
+                }
             } catch (DataAccessException e) {
                 res.status(500);
                 return gson.toJson(new ErrorResponse("Error creating game"));
             }
         });
     }
+
 
     public void joinGame() {
         put("/game", (req, res) -> {

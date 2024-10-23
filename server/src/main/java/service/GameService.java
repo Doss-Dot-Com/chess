@@ -18,16 +18,9 @@ public class GameService {
 
     // Method to create a new game
     public int createGame(GameRequest gameRequest) throws DataAccessException {
-        // Game ID is properly generated and unique
-        int gameID = UUID.randomUUID().hashCode();
-
-        // Create a new GameData object using the game ID and the game name from the request
+        int gameID = Math.abs(UUID.randomUUID().hashCode());  // Generate a positive game ID
         GameData newGame = new GameData(gameID, gameRequest.getGameName());
-
-        // Persist the new game to the data store
         dataAccess.createGame(newGame);
-
-        // Return the generated game ID
         return gameID;
     }
 
