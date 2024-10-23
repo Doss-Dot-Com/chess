@@ -18,15 +18,22 @@ public class GameService {
 
     // Method to create a new game
     public int createGame(GameRequest gameRequest) throws DataAccessException {
-        int gameID = UUID.randomUUID().hashCode();  // Create a unique game ID
+        // Game ID is properly generated and unique
+        int gameID = UUID.randomUUID().hashCode();
+
+        // Create a new GameData object using the game ID and the game name from the request
         GameData newGame = new GameData(gameID, gameRequest.getGameName());
+
+        // Persist the new game to the data store
         dataAccess.createGame(newGame);
+
+        // Return the generated game ID
         return gameID;
     }
 
     // Method to list all games
     public List<GameData> listGames() throws DataAccessException {
-        return dataAccess.getAllGames();  // Ensure getAllGames is implemented in DataAccess
+        return dataAccess.getAllGames();  // getAllGames is implemented in DataAccess
     }
 
     // Method to join a game
