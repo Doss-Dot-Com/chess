@@ -42,6 +42,12 @@ public class UserService {
     }
 
     public void logout(String authToken) throws DataAccessException {
+        AuthData auth = dataAccess.getAuth(authToken);
+
+        if (auth == null) {
+            throw new DataAccessException("Invalid auth token");
+        }
+
         dataAccess.deleteAuth(authToken);
     }
 }
