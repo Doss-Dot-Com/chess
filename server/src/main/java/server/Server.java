@@ -28,7 +28,7 @@ public class Server {
 
         // Handlers for users and games
         UserHandler userHandler = new UserHandler(userService);
-        GameHandler gameHandler = new GameHandler(gameService, dataAccess);
+        GameHandler gameHandler = new GameHandler(gameService, dataAccess, userService);
 
         // Register the user-related routes
         userHandler.register();

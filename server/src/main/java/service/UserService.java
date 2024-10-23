@@ -11,6 +11,15 @@ public class UserService {
         this.dataAccess = dataAccess;
     }
 
+    public boolean isValidToken(String authToken) {
+        try {
+            AuthData authData = dataAccess.getAuth(authToken);
+            return authData != null; // Token is valid if authData is found
+        } catch (DataAccessException e) {
+            return false; // Invalid token if there's an exception
+        }
+    }
+
     public AuthData register(UserData user) throws DataAccessException, UserAlreadyExistsException {
         // Check if any required field is missing
         if (user.username() == null || user.password() == null || user.email() == null) {

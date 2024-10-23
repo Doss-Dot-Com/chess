@@ -9,6 +9,7 @@ import model.ListGameResponse;
 import model.GameResponse;
 import model.ErrorResponse;
 import service.GameService;
+import service.UserService;
 import dataaccess.DataAccess;
 import dataaccess.DataAccessException;
 
@@ -20,14 +21,24 @@ public class GameHandler {
     private final Gson gson = new Gson();
     private final GameService gameService;
     private final DataAccess dataAccess;
+    private final UserService userService;
 
-    public GameHandler(GameService gameService, DataAccess dataAccess) {
+    public GameHandler(GameService gameService, DataAccess dataAccess, UserService userService) {
         this.gameService = gameService;
         this.dataAccess = dataAccess;
+        this.userService = userService;
     }
 
     public void createGame() {
         post("/game", (req, res) -> {
+            String authToken = req.headers("Authorization");
+
+            // Check if token is valid before proceeding
+            if (authToken == null || !userService.isValidToken(authToken)) {
+                res.status(401); // Unauthorized
+                return gson.toJson(new ErrorResponse("Unauthorized: Invalid auth token"));
+            }
+
             GameRequest gameRequest = gson.fromJson(req.body(), GameRequest.class);
             try {
                 int gameID = gameService.createGame(gameRequest);
@@ -59,13 +70,12 @@ public class GameHandler {
 
     public void listGames() {
         get("/game", (req, res) -> {
-            String authToken = req.headers("authorization");
+            String authToken = req.headers("Authorization");  // Use consistent case for header name
             try {
                 // Validate the auth token
-                AuthData auth = dataAccess.getAuth(authToken);
-                if (auth == null) {
+                if (authToken == null || !userService.isValidToken(authToken)) {
                     res.status(401);  // Unauthorized
-                    return gson.toJson(new ErrorResponse("Unauthorized"));
+                    return gson.toJson(new ErrorResponse("Unauthorized: Invalid auth token"));
                 }
 
                 List<GameData> games = gameService.listGames();
@@ -78,13 +88,13 @@ public class GameHandler {
         });
     }
 
-
     public void handleGameEndpoints() {
         createGame();
         joinGame();
         listGames();
     }
 }
+
 
 
 
