@@ -20,6 +20,7 @@ public class UserService {
         }
     }
 
+
     public AuthData register(UserData user) throws DataAccessException, UserAlreadyExistsException {
         // Check if any required field is missing
         if (user.username() == null || user.password() == null || user.email() == null) {

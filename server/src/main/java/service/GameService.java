@@ -26,39 +26,48 @@ public class GameService {
 
     // Method to list all games
     public List<GameData> listGames() throws DataAccessException {
-        return dataAccess.getAllGames();  // getAllGames is implemented in DataAccess
+        return dataAccess.getAllGames();
     }
 
-    // Method to join a game
     public void joinGame(JoinGameRequest joinRequest) throws DataAccessException {
+        // Get the game from the data access layer
         GameData game = dataAccess.getGame(joinRequest.getGameID());
 
         if (game == null) {
             throw new DataAccessException("Game not found");
         }
 
+        // Check if playerColor is provided, if it's null, we need to throw an error
         String playerColor = joinRequest.getPlayerColor();
         if (playerColor == null) {
-            throw new DataAccessException("Player color not specified");
+            throw new DataAccessException("Player color is missing");
         }
 
-        if (playerColor.equals("WHITE")) {
+        String username = joinRequest.getUsername();
+        if (username == null) {
+            throw new DataAccessException("Username is missing");
+        }
+
+        // Check which color the player is joining as
+        if (playerColor.equalsIgnoreCase("WHITE")) {
             if (game.getWhiteUsername() != null) {
                 throw new DataAccessException("White player slot already taken");
             }
-            game.setWhiteUsername(joinRequest.getUsername());
-        } else if (playerColor.equals("BLACK")) {
+            game.setWhiteUsername(username);
+        } else if (playerColor.equalsIgnoreCase("BLACK")) {
             if (game.getBlackUsername() != null) {
                 throw new DataAccessException("Black player slot already taken");
             }
-            game.setBlackUsername(joinRequest.getUsername());
+            game.setBlackUsername(username);
         } else {
             throw new DataAccessException("Invalid player color");
         }
 
-        dataAccess.updateGame(game);  // Update the game in the data store
+        // Update the game in memory
+        dataAccess.updateGame(game);
     }
 }
+
 
 
 

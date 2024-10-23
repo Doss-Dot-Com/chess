@@ -53,7 +53,7 @@ public class UserHandler {
 
     public void logout() {
         delete("/session", (req, res) -> {
-            String authToken = req.headers("authorization");
+            String authToken = req.headers("Authorization");
 
             // If no auth token is provided, respond with 401 Unauthorized
             if (authToken == null || authToken.isEmpty()) {
@@ -72,6 +72,6 @@ public class UserHandler {
             }
         });
     }
-
 }
+
 

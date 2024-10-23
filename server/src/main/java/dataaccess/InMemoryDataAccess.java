@@ -41,12 +41,15 @@ public class InMemoryDataAccess implements DataAccess {
 
     @Override
     public GameData getGame(int gameID) throws DataAccessException {
-        return games.get(gameID);
+        GameData game = games.get(gameID);
+        // System.out.println("Retrieving gameID: " + gameID + ", White: " + (game != null ? game.getWhiteUsername() : "null") + ", Black: " + (game != null ? game.getBlackUsername() : "null"));
+        return game;
     }
 
     @Override
     public void updateGame(GameData game) throws DataAccessException {
         games.put(game.getGameID(), game);
+        // System.out.println("Game updated in memory! GameID: " + game.getGameID() + ", White: " + game.getWhiteUsername() + ", Black: " + game.getBlackUsername());
     }
 
     @Override

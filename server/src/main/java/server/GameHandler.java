@@ -32,58 +32,65 @@ public class GameHandler {
     public void createGame() {
         post("/game", (req, res) -> {
             String authToken = req.headers("Authorization");
-
-            // Check if token is valid before proceeding
             if (authToken == null || !userService.isValidToken(authToken)) {
-                res.status(401); // Unauthorized
-                return gson.toJson(new ErrorResponse("Unauthorized: Invalid auth token"));
+                res.status(401);
+                return gson.toJson(new ErrorResponse("Error: unauthorized"));
             }
 
             GameRequest gameRequest = gson.fromJson(req.body(), GameRequest.class);
             try {
                 int gameID = gameService.createGame(gameRequest);
-                if (gameID > 0) {
-                    res.status(200);
-                    return gson.toJson(new GameResponse(gameID));  // Ensure gameID is returned in response
-                } else {
-                    res.status(500);
-                    return gson.toJson(new ErrorResponse("Error creating game"));
-                }
+                res.status(200);
+                return gson.toJson(new GameResponse(gameID));
+            } catch (IllegalArgumentException e) {
+                res.status(400);  // Bad request due to missing or invalid fields
+                return gson.toJson(new ErrorResponse("Error: bad request"));
             } catch (DataAccessException e) {
-                res.status(500);
-                return gson.toJson(new ErrorResponse("Error creating game"));
+                res.status(500);  // Internal server error
+                return gson.toJson(new ErrorResponse("Error: server error"));
             }
         });
     }
 
-
     public void joinGame() {
         put("/game", (req, res) -> {
+            // Log the raw request body
+            System.out.println("Raw request body: " + req.body());
+
             JoinGameRequest joinRequest = gson.fromJson(req.body(), JoinGameRequest.class);
+
+            // Check for missing fields and handle errors gracefully
+            if (joinRequest.getUsername() == null) {
+                res.status(400);
+                return gson.toJson(new ErrorResponse("Error: Username is missing"));
+            }
+            if (joinRequest.getPlayerColor() == null) {
+                res.status(400);
+                return gson.toJson(new ErrorResponse("Error: Player color is missing"));
+            }
+
             try {
                 gameService.joinGame(joinRequest);
                 res.status(200);
                 return "{}";  // Empty JSON for success
             } catch (DataAccessException e) {
                 res.status(400);
-                return gson.toJson(new ErrorResponse("Error: bad request"));
-            } catch (IllegalArgumentException e) {
-                res.status(403);
-                return gson.toJson(new ErrorResponse("Error: already taken"));
+                return gson.toJson(new ErrorResponse(e.getMessage()));
             }
         });
     }
 
     public void listGames() {
         get("/game", (req, res) -> {
-            String authToken = req.headers("Authorization");  // Use consistent case for header name
-            try {
-                // Validate the auth token
-                if (authToken == null || !userService.isValidToken(authToken)) {
-                    res.status(401);  // Unauthorized
-                    return gson.toJson(new ErrorResponse("Unauthorized: Invalid auth token"));
-                }
+            String authToken = req.headers("Authorization");
 
+            // Validate the auth token
+            if (authToken == null || !userService.isValidToken(authToken)) {
+                res.status(401);  // Unauthorized
+                return gson.toJson(new ErrorResponse("Unauthorized: Invalid auth token"));
+            }
+
+            try {
                 List<GameData> games = gameService.listGames();
                 res.status(200);
                 return gson.toJson(new ListGameResponse(games));
@@ -100,6 +107,7 @@ public class GameHandler {
         listGames();
     }
 }
+
 
 
 
