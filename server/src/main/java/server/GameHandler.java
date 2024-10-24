@@ -106,7 +106,7 @@ public class GameHandler {
             // Validate the auth token
             if (authToken == null || !userService.isValidToken(authToken)) {
                 res.status(401);  // Unauthorized
-                return gson.toJson(new ErrorResponse("Unauthorized: Invalid auth token"));
+                return gson.toJson(new ErrorResponse("Error: unauthorized"));
             }
 
             try {
@@ -121,7 +121,7 @@ public class GameHandler {
     }
 
     public void clearData() {
-        post("/clear", (req, res) -> {
+        delete("/db", (req, res) -> {
             String authToken = req.headers("Authorization");
             if (authToken == null || !userService.isValidToken(authToken)) {
                 res.status(401);  // Unauthorized response

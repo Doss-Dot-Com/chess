@@ -3,6 +3,8 @@ package server;
 import dataaccess.InMemoryDataAccess;
 import service.GameService;
 import service.UserService;
+import spark.Request;
+import spark.Response;
 import spark.Spark;
 
 import static spark.Spark.*;
@@ -39,6 +41,8 @@ public class Server {
         gameHandler.createGame();
         gameHandler.joinGame();
         gameHandler.listGames();
+        //gameHandler.clearData();
+
 
         // Root route
         get("/", (req, res) -> "Welcome to the User Service!");
@@ -62,6 +66,7 @@ public class Server {
         });
 
         // Wait for Spark to be fully initialized
+
         awaitInitialization();
 
         // Output to indicate the server is running

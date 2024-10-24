@@ -40,8 +40,8 @@ public class GameServiceTest {
 
     @Test
     public void testCreateGameFailure() {
-        GameRequest gameRequest = new GameRequest(null);
-        assertThrows(IllegalArgumentException.class, () -> gameService.createGame(gameRequest));
+        GameRequest invalidRequest = new GameRequest(null); // Example of invalid input
+        assertThrows(IllegalArgumentException.class, () -> gameService.createGame(invalidRequest));
     }
 
     @Test

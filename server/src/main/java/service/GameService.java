@@ -22,7 +22,10 @@ public class GameService {
 
     // Method to create a new game
     public int createGame(GameRequest gameRequest) throws DataAccessException {
-        int gameID = Math.abs(UUID.randomUUID().hashCode());  // Generate a positive game ID
+        if (gameRequest.getGameName() == null || gameRequest.getGameName().isEmpty()) {
+            throw new IllegalArgumentException("Game name cannot be null or empty");
+        }
+        int gameID = Math.abs(UUID.randomUUID().hashCode());
         GameData newGame = new GameData(gameID, gameRequest.getGameName());
         dataAccess.createGame(newGame);
         return gameID;
@@ -42,14 +45,14 @@ public class GameService {
             System.out.println("Current whiteUsername: " + game.getWhiteUsername());
             if (game.getWhiteUsername() != null) {
                 System.out.println("White player slot already taken");
-                throw new IllegalArgumentException("White player slot already taken");
+                throw new IllegalArgumentException("Error: unauthorized");
             }
             game.setWhiteUsername(request.getUsername());
         } else if (request.getPlayerColor().equalsIgnoreCase("BLACK")) {
             System.out.println("Current blackUsername: " + game.getBlackUsername());
             if (game.getBlackUsername() != null) {
                 System.out.println("Black player slot already taken");
-                throw new IllegalArgumentException("Black player slot already taken");
+                throw new IllegalArgumentException("Error: unauthorized");
             }
             game.setBlackUsername(request.getUsername());
         } else {
