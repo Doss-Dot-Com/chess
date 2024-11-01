@@ -1,6 +1,5 @@
 package server;
 
-import dataaccess.DatabaseManager;
 import dataaccess.InMemoryDataAccess;
 import service.GameService;
 import service.UserService;
@@ -18,9 +17,6 @@ public class Server {
 
     // Method to start the server on a given port
     public int run(int port) {
-        // Initialize the database and tables if they don’t exist
-        DatabaseManager.initializeDatabase();
-
         // Set the port for the server
         port(port);
 
@@ -47,6 +43,7 @@ public class Server {
         gameHandler.listGames();
         //gameHandler.clearData();
 
+
         // Root route
         get("/", (req, res) -> "Welcome to the User Service!");
 
@@ -69,6 +66,7 @@ public class Server {
         });
 
         // Wait for Spark to be fully initialized
+
         awaitInitialization();
 
         // Output to indicate the server is running
@@ -89,6 +87,5 @@ public class Server {
         server.run(8080);  // Start the server on port 8080
     }
 }
-
 
 
