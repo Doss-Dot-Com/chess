@@ -1,6 +1,9 @@
 package server;
 
+import dataaccess.DataAccessException;
+import dataaccess.DatabaseManager;
 import dataaccess.InMemoryDataAccess;
+import dataaccess.MySqlDataAccess;
 import service.GameService;
 import service.UserService;
 import spark.Request;
@@ -11,20 +14,33 @@ import static spark.Spark.*;
 
 public class Server {
 
-    private InMemoryDataAccess dataAccess;
+    private MySqlDataAccess dataAccess;
     private UserService userService;
     private GameService gameService;
+
+    public Server() {
+        try {
+            DatabaseManager.configureDatabase();
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     // Method to start the server on a given port
     public int run(int port) {
         // Set the port for the server
         port(port);
 
+
         // Serve static files
         staticFiles.location("/web");
 
         // Initialize data access and services
-        dataAccess = new InMemoryDataAccess();
+        try {
+            dataAccess = new MySqlDataAccess();
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
         userService = new UserService(dataAccess);
         gameService = new GameService(dataAccess);
 
