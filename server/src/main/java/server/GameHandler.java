@@ -14,6 +14,7 @@ import dataaccess.DataAccess;
 import dataaccess.DataAccessException;
 
 import java.util.List;
+import java.util.Objects;
 
 import static spark.Spark.*;
 
@@ -79,6 +80,20 @@ public class GameHandler {
             if (joinRequest.getPlayerColor() == null) {
                 res.status(400);
                 return gson.toJson(new ErrorResponse("Error: Player color is missing"));
+            }
+
+            if (Objects.equals(joinRequest.getPlayerColor(), "WHITE")) {
+                GameData game = dataAccess.getGame(joinRequest.getGameID());
+                if (game.getWhiteUsername() != null) {
+                    res.status(403);
+                    return gson.toJson(new ErrorResponse("Error: user already exists"));
+                }
+            } else if (Objects.equals(joinRequest.getPlayerColor(), "BLACK")) {
+                GameData game = dataAccess.getGame(joinRequest.getGameID());
+                if (game.getBlackUsername() != null) {
+                    res.status(403);
+                    return gson.toJson(new ErrorResponse("Error: user already exists"));
+                }
             }
 
             try {
