@@ -36,28 +36,26 @@ public class GameService {
         return dataAccess.getAllGames();
     }
 
-    public void joinGame(JoinGameRequest request) throws DataAccessException {
-        GameData game = dataAccess.getGame(request.getGameID());
+    public void joinGame(JoinGameRequest joinRequest) throws DataAccessException {
+        GameData game = dataAccess.getGame(joinRequest.getGameID());
 
-        System.out.println("Joining game ID: " + request.getGameID() + " as " + request.getPlayerColor() + " with username: " + request.getUsername());
-
-        if (request.getPlayerColor().equalsIgnoreCase("WHITE")) {
-            System.out.println("Current whiteUsername: " + game.getWhiteUsername());
-            if (game.getWhiteUsername() != null) {
-                System.out.println("White player slot already taken");
-                throw new IllegalArgumentException("Error: unauthorized");
-            }
-            game.setWhiteUsername(request.getUsername());
-        } else if (request.getPlayerColor().equalsIgnoreCase("BLACK")) {
-            System.out.println("Current blackUsername: " + game.getBlackUsername());
-            if (game.getBlackUsername() != null) {
-                System.out.println("Black player slot already taken");
-                throw new IllegalArgumentException("Error: unauthorized");
-            }
-            game.setBlackUsername(request.getUsername());
-        } else {
-            throw new IllegalArgumentException("Invalid player color");
+        // Handle the case where the game does not exist
+        if (game == null) {
+            throw new IllegalArgumentException("Game not found with ID: " + joinRequest.getGameID());
         }
+
+        // Set the player color and validate input
+        if ("WHITE".equalsIgnoreCase(joinRequest.getPlayerColor())) {
+            game.setWhiteUsername(joinRequest.getUsername());
+        } else if ("BLACK".equalsIgnoreCase(joinRequest.getPlayerColor())) {
+            game.setBlackUsername(joinRequest.getUsername());
+        } else {
+            throw new IllegalArgumentException("Invalid player color: " + joinRequest.getPlayerColor());
+        }
+
+        // Update the game in the database
+        dataAccess.updateGame(game);
+
 
         // After game updated
         System.out.println("Game updated! White: " + game.getWhiteUsername() + ", Black: " + game.getBlackUsername());

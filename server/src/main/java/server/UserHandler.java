@@ -56,19 +56,18 @@ public class UserHandler {
     public void logout() {
         delete("/session", (req, res) -> {
             String authToken = req.headers("Authorization");
+            System.out.println("Received token for logout: " + authToken);  // Log received token
 
-            // Respond with 401 if the authorization token is missing or empty
             if (authToken == null || authToken.isEmpty()) {
                 res.status(401);
                 return gson.toJson(new ErrorResponse("Error: unauthorized"));
             }
 
             try {
-                userService.logout(authToken);  // Call the UserService to handle logout
-                res.status(200);  // Set status to 200 OK on success
-                return "{}";  // Return an empty JSON object for successful logout
+                userService.logout(authToken);
+                res.status(200);
+                return "{}";
             } catch (DataAccessException e) {
-                // Return 401 Unauthorized if the token is invalid
                 res.status(401);
                 return gson.toJson(new ErrorResponse("Error: unauthorized"));
             }

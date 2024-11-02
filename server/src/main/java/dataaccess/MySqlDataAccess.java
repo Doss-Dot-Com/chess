@@ -63,11 +63,21 @@ public class MySqlDataAccess implements DataAccess {
 
     @Override
     public void clear() throws DataAccessException {
-        try (Connection conn = DatabaseManager.getConnection();
-             PreparedStatement ps = conn.prepareStatement("TRUNCATE TABLE auth, games, users")) {
-            ps.executeUpdate();
+        String[] clearStatements = {
+                "DELETE FROM auth",   // Clear auth table
+                "DELETE FROM games",  // Clear games table
+                "DELETE FROM users"   // Clear users table
+        };
+
+        try (Connection conn = DatabaseManager.getConnection()) {
+            for (String statement : clearStatements) {
+                try (PreparedStatement ps = conn.prepareStatement(statement)) {
+                    ps.executeUpdate();
+                }
+            }
+            System.out.println("Tables auth, games, and users cleared.");  // Log successful clearance
         } catch (SQLException e) {
-            throw new DataAccessException("Error clearing database: " + e.getMessage());
+            throw new DataAccessException("Error clearing tables: " + e.getMessage());
         }
     }
 
@@ -111,22 +121,19 @@ public class MySqlDataAccess implements DataAccess {
 
     // New MySQL-specific method to create a game and return its generated ID
     public int createGameWithID(GameData game) throws DataAccessException {
-        String statement = "INSERT INTO games (gameName, whiteUsername, blackUsername) VALUES (?, ?, ?)";
+        String statement = "INSERT INTO games (gameID, gameName, whiteUsername, blackUsername) VALUES (?, ?, ?, ?)";
         try (Connection conn = DatabaseManager.getConnection();
-             PreparedStatement ps = conn.prepareStatement(statement, PreparedStatement.RETURN_GENERATED_KEYS)) {
-            ps.setString(1, game.getGameName());
-            ps.setString(2, game.getWhiteUsername());
-            ps.setString(3, game.getBlackUsername());
+             PreparedStatement ps = conn.prepareStatement(statement)) {
+            ps.setInt(1, game.getGameID()); // Use the specified gameID
+            ps.setString(2, game.getGameName());
+            ps.setString(3, game.getWhiteUsername());
+            ps.setString(4, game.getBlackUsername());
             ps.executeUpdate();
-            try (ResultSet rs = ps.getGeneratedKeys()) {
-                if (rs.next()) {
-                    return rs.getInt(1); // Return the generated gameID
-                }
-            }
+            System.out.println("Game created with specified ID: " + game.getGameID());
+            return game.getGameID();  // Return the specified gameID
         } catch (SQLException e) {
-            throw new DataAccessException("Error creating game: " + e.getMessage());
+            throw new DataAccessException("Error creating game with specified ID: " + e.getMessage());
         }
-        return -1; // Indicates failure to create game
     }
 
     @Override

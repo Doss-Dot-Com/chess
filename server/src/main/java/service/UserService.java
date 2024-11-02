@@ -52,14 +52,14 @@ public class UserService {
     public AuthData login(UserData user) throws DataAccessException {
         UserData storedUser = dataAccess.getUser(user.username());
 
-        // Check if user exists and validate the hashed password
         if (storedUser == null || !BCrypt.checkpw(user.password(), storedUser.password())) {
             throw new DataAccessException("Invalid username or password");
         }
 
-        // Generate an auth token if login is successful
+        // Generate and store the token if login is successful
         AuthData authData = new AuthData(generateAuthToken(), user.username());
         dataAccess.createAuth(authData);
+        System.out.println("Token created: " + authData.getAuthToken() + " for user: " + user.username());  // Log token creation
         return authData;
     }
 
@@ -68,12 +68,15 @@ public class UserService {
     }
 
     public void logout(String authToken) throws DataAccessException {
-        AuthData auth = dataAccess.getAuth(authToken); // Check if the token exists in the database
+        AuthData auth = dataAccess.getAuth(authToken);
         if (auth == null) {
-            throw new DataAccessException("Invalid token"); // Unauthorized if token is not found
+            System.out.println("Logout failed: Invalid token " + authToken);  // Log failed validation
+            throw new DataAccessException("Invalid token");
         }
-        dataAccess.deleteAuth(authToken);  // Remove the token from the database if valid
-        System.out.println("Token deleted successfully for token: " + authToken); // Log successful deletion
+
+        // If valid, delete the token
+        dataAccess.deleteAuth(authToken);
+        System.out.println("Token deleted successfully: " + authToken);  // Log successful deletion
     }
 }
 
