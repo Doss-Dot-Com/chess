@@ -3,6 +3,7 @@ package service;
 import dataaccess.*;
 import model.*;
 import java.util.UUID;
+import org.mindrot.jbcrypt.BCrypt;
 
 public class UserService {
     private final DataAccess dataAccess;
@@ -47,26 +48,32 @@ public class UserService {
         return auth;
     }
 
+
     public AuthData login(UserData user) throws DataAccessException {
-        UserData existingUser = dataAccess.getUser(user.username());
-        if (existingUser != null && existingUser.password().equals(user.password())) {
-            String authToken = UUID.randomUUID().toString();
-            AuthData auth = new AuthData(authToken, user.username());
-            dataAccess.createAuth(auth);
-            return auth;
-        } else {
-            throw new DataAccessException("Unauthorized");
+        UserData storedUser = dataAccess.getUser(user.username());
+
+        // Check if user exists and validate the hashed password
+        if (storedUser == null || !BCrypt.checkpw(user.password(), storedUser.password())) {
+            throw new DataAccessException("Invalid username or password");
         }
+
+        // Generate an auth token if login is successful
+        AuthData authData = new AuthData(generateAuthToken(), user.username());
+        dataAccess.createAuth(authData);
+        return authData;
+    }
+
+    private String generateAuthToken() {
+        return java.util.UUID.randomUUID().toString();
     }
 
     public void logout(String authToken) throws DataAccessException {
-        AuthData auth = dataAccess.getAuth(authToken);
-
+        AuthData auth = dataAccess.getAuth(authToken); // Check if the token exists in the database
         if (auth == null) {
-            throw new DataAccessException("Invalid auth token");
+            throw new DataAccessException("Invalid token"); // Unauthorized if token is not found
         }
-
-        dataAccess.deleteAuth(authToken);
+        dataAccess.deleteAuth(authToken);  // Remove the token from the database if valid
+        System.out.println("Token deleted successfully for token: " + authToken); // Log successful deletion
     }
 }
 

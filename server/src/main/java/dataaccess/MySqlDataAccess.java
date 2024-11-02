@@ -4,6 +4,8 @@ import model.AuthData;
 import model.GameData;
 import model.UserData;
 
+import org.mindrot.jbcrypt.BCrypt;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -71,11 +73,12 @@ public class MySqlDataAccess implements DataAccess {
 
     @Override
     public void createUser(UserData user) throws DataAccessException {
+        String hashedPassword = BCrypt.hashpw(user.password(), BCrypt.gensalt()); // Hash the password
         String statement = "INSERT INTO users (username, password, email) VALUES (?, ?, ?)";
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement ps = conn.prepareStatement(statement)) {
             ps.setString(1, user.username());
-            ps.setString(2, user.password());
+            ps.setString(2, hashedPassword);  // Store hashed password
             ps.setString(3, user.email());
             ps.executeUpdate();
         } catch (SQLException e) {
