@@ -7,7 +7,6 @@ import model.GameData;
 import model.UserData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 public class MySqlDataAccessTest {
@@ -19,10 +18,10 @@ public class MySqlDataAccessTest {
         dataAccess.clear();  // Clear tables before each test
     }
 
-    // 1. Tests for createUser
+    // Tests for createUser
     @Test
     public void testCreateUserSuccess() throws DataAccessException {
-        UserData user = new UserData("user1", "password123", "user1@example.com");
+        UserData user = new UserData("user1", "password", "user1@example.com");
         dataAccess.createUser(user);
         UserData retrievedUser = dataAccess.getUser("user1");
         assertNotNull(retrievedUser);
@@ -32,17 +31,17 @@ public class MySqlDataAccessTest {
     @Test
     public void testCreateUserDuplicateUsername() {
         assertThrows(DataAccessException.class, () -> {
-            UserData user1 = new UserData("duplicateUser", "password1", "user1@example.com");
+            UserData user1 = new UserData("duplicateUser", "password", "user1@example.com");
             UserData user2 = new UserData("duplicateUser", "password2", "user2@example.com");
             dataAccess.createUser(user1);
             dataAccess.createUser(user2);  // Should throw an exception
         });
     }
 
-    // 2. Tests for getUser
+    // Tests for getUser
     @Test
     public void testGetUserSuccess() throws DataAccessException {
-        UserData user = new UserData("existingUser", "password123", "existingUser@example.com");
+        UserData user = new UserData("existingUser", "password", "existingUser@example.com");
         dataAccess.createUser(user);
         UserData retrievedUser = dataAccess.getUser("existingUser");
         assertNotNull(retrievedUser);
@@ -54,10 +53,10 @@ public class MySqlDataAccessTest {
         assertNull(dataAccess.getUser("nonExistentUser"));
     }
 
-    // 3. Tests for createGame
+    // Tests for createGame
     @Test
     public void testCreateGameSuccess() throws DataAccessException {
-        UserData user = new UserData("whitePlayer", "password123", "white@example.com");
+        UserData user = new UserData("whitePlayer", "password", "white@example.com");
         dataAccess.createUser(user);
 
         GameData game = new GameData(1, "Chess Game");
@@ -78,10 +77,10 @@ public class MySqlDataAccessTest {
         });
     }
 
-    // 4. Tests for getGame
+    // Tests for getGame
     @Test
     public void testGetGameSuccess() throws DataAccessException {
-        UserData user = new UserData("player", "password123", "player@example.com");
+        UserData user = new UserData("player", "password", "player@example.com");
         dataAccess.createUser(user);
 
         GameData game = new GameData(3, "Retrieve Game");
@@ -98,11 +97,11 @@ public class MySqlDataAccessTest {
         assertNull(dataAccess.getGame(999));  // Non-existent game ID
     }
 
-    // 5. Tests for updateGame
+    // Tests for updateGame
     @Test
     public void testUpdateGameSuccess() throws DataAccessException {
-        UserData whiteUser = new UserData("whitePlayer", "password123", "white@example.com");
-        UserData blackUser = new UserData("blackPlayer", "password123", "black@example.com");
+        UserData whiteUser = new UserData("whitePlayer", "password", "white@example.com");
+        UserData blackUser = new UserData("blackPlayer", "password", "black@example.com");
         dataAccess.createUser(whiteUser);
         dataAccess.createUser(blackUser);
 
@@ -123,10 +122,10 @@ public class MySqlDataAccessTest {
         assertThrows(DataAccessException.class, () -> dataAccess.updateGame(nonExistentGame));
     }
 
-    // 6. Tests for createAuth
+    // Tests for createAuth
     @Test
     public void testCreateAuthSuccess() throws DataAccessException {
-        UserData user = new UserData("authUser", "password123", "authUser@example.com");
+        UserData user = new UserData("authUser", "password", "authUser@example.com");
         dataAccess.createUser(user);
 
         AuthData auth = new AuthData("authToken123", "authUser");
@@ -145,10 +144,10 @@ public class MySqlDataAccessTest {
         });
     }
 
-    // 7. Tests for getAuth
+    // Tests for getAuth
     @Test
     public void testGetAuthSuccess() throws DataAccessException {
-        UserData user = new UserData("authTestUser", "password123", "authTestUser@example.com");
+        UserData user = new UserData("authTestUser", "password", "authTestUser@example.com");
         dataAccess.createUser(user);
 
         AuthData auth = new AuthData("authToken456", "authTestUser");
@@ -164,10 +163,10 @@ public class MySqlDataAccessTest {
         assertNull(dataAccess.getAuth("nonExistentToken"));
     }
 
-    // 8. Tests for deleteAuth
+    // Tests for deleteAuth
     @Test
     public void testDeleteAuthSuccess() throws DataAccessException {
-        UserData user = new UserData("deleteAuthUser", "password123", "deleteAuthUser@example.com");
+        UserData user = new UserData("deleteAuthUser", "password", "deleteAuthUser@example.com");
         dataAccess.createUser(user);
 
         AuthData auth = new AuthData("authTokenToDelete", "deleteAuthUser");
@@ -183,6 +182,7 @@ public class MySqlDataAccessTest {
         assertNull(dataAccess.getAuth("nonExistentAuthToken"));
     }
 }
+
 
 
 
