@@ -4,7 +4,6 @@ package chess;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -51,20 +50,31 @@ public class ChessGame {
 
         // Verify each potential move to ensure it doesn't leave the king in check
         for (ChessMove move : potentialMoves) {
-            ChessBoard tempBoard = new ChessBoard();
-            copyBoardState(board, tempBoard);
-
-            // Simulate the move on a temporary board
-            tempBoard.addPiece(move.getEndPosition(), piece);
-            tempBoard.addPiece(move.getStartPosition(), null);
-
-            // Check if the king would be in check after this move
-            if (!isInCheck(piece.getTeamColor(), tempBoard)) {
+            if (isMoveSafe(move, piece)) {
                 validMoves.add(move);
             }
         }
 
         return validMoves;
+    }
+
+    /**
+     * Checks if a move would leave the king in check on a temporary board.
+     *
+     * @param move The move to simulate
+     * @param piece The piece to move
+     * @return true if the move is safe, false if it leaves the king in check
+     */
+    private boolean isMoveSafe(ChessMove move, ChessPiece piece) {
+        ChessBoard tempBoard = new ChessBoard();
+        copyBoardState(board, tempBoard);
+
+        // Simulate the move on a temporary board
+        tempBoard.addPiece(move.getEndPosition(), piece);
+        tempBoard.addPiece(move.getStartPosition(), null);
+
+        // Check if the king would be in check after this move
+        return !isInCheck(piece.getTeamColor(), tempBoard);
     }
 
     /**
