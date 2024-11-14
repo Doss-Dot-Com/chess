@@ -201,9 +201,9 @@ public class ChessGame {
             for (int col = 1; col <= 8; col++) {
                 ChessPosition position = new ChessPosition(row, col);
                 ChessPiece piece = board.getPiece(position);
-                if (piece != null && piece.getTeamColor() == teamColor) {
+                if (piece != null && piece.getTeamColor() == teamColor) { // Added braces
                     Collection<ChessMove> moves = validMoves(position);
-                    if (moves != null && !moves.isEmpty()) {
+                    if (moves != null && !moves.isEmpty()) { // Added braces
                         return true; // There is at least one legal move
                     }
                 }

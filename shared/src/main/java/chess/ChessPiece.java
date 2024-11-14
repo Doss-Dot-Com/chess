@@ -185,10 +185,7 @@ public class ChessPiece {
         };
         for (int[] move : knightMoves) {
             ChessPosition newPos = new ChessPosition(myPosition.getRow() + move[0], myPosition.getColumn() + move[1]);
-            if (isPositionValid(newPos) &&
-                    (board.getPiece(newPos) == null || board.getPiece(newPos).getTeamColor() != this.pieceColor)) {
-                moves.add(new ChessMove(myPosition, newPos, null));
-            }
+            addMoveIfValid(board, myPosition, newPos, moves);
         }
     }
 
@@ -200,10 +197,7 @@ public class ChessPiece {
         };
         for (int[] move : kingMoves) {
             ChessPosition newPos = new ChessPosition(myPosition.getRow() + move[0], myPosition.getColumn() + move[1]);
-            if (isPositionValid(newPos) &&
-                    (board.getPiece(newPos) == null || board.getPiece(newPos).getTeamColor() != this.pieceColor)) {
-                moves.add(new ChessMove(myPosition, newPos, null));
-            }
+            addMoveIfValid(board, myPosition, newPos, moves);
         }
     }
 
@@ -218,13 +212,16 @@ public class ChessPiece {
             if (!isPositionValid(newPos)) {
                 break;
             }
+            addMoveIfValid(board, myPosition, newPos, moves);
             if (board.getPiece(newPos) != null) {
-                if (board.getPiece(newPos).getTeamColor() != this.pieceColor) {
-                    moves.add(new ChessMove(myPosition, newPos, null)); // Capture opponent piece
-                }
                 break; // Block further movement
             }
-            moves.add(new ChessMove(myPosition, newPos, null)); // Normal move
+        }
+    }
+
+    private void addMoveIfValid(ChessBoard board, ChessPosition start, ChessPosition end, Collection<ChessMove> moves) {
+        if (isPositionValid(end) && (board.getPiece(end) == null || board.getPiece(end).getTeamColor() != this.pieceColor)) {
+            moves.add(new ChessMove(start, end, null));
         }
     }
 
