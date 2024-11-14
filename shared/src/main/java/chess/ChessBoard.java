@@ -7,7 +7,7 @@ import java.util.Objects;
  * Manages the chess board and the placement of chess pieces.
  */
 public class ChessBoard {
-    private ChessPiece[][] squares = new ChessPiece[8][8];
+    private final ChessPiece[][] squares = new ChessPiece[8][8];
 
     public ChessBoard() {
         // Initialize empty board
@@ -57,8 +57,12 @@ public class ChessBoard {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         ChessBoard that = (ChessBoard) o;
         return Objects.deepEquals(squares, that.squares);
     }

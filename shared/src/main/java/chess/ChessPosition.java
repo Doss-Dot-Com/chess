@@ -40,8 +40,12 @@ public class ChessPosition {
      */
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;  // Check if both references are the same
-        if (o == null || getClass() != o.getClass()) return false; // Ensure the object is not null and is of the same class
+        if (this == o) {
+            return true;  // Check if both references are the same
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false; // Ensure the object is not null and is of the same class
+        }
 
         ChessPosition that = (ChessPosition) o;
         return row == that.row && column == that.column;  // Compare the row and column values
