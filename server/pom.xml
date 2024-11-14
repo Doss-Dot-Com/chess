@@ -108,6 +108,12 @@
             <scope>system</scope>
             <systemPath>${pom.basedir}/lib/passoff-dependencies.jar</systemPath>
         </dependency>
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20210307</version>
+        </dependency>
+
     </dependencies>
 
 
