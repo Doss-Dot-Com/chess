@@ -59,6 +59,10 @@ public class ServerFacade {
 
     // Logout
     public String logout(String authToken) throws IOException {
+        if (authToken == null || authToken.isEmpty()) {
+            throw new IOException("Invalid authToken: Token cannot be null or empty.");
+        }
+
         URL url = new URL(serverUrl + "/session");
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("DELETE");
@@ -68,7 +72,9 @@ public class ServerFacade {
             throw new IOException("Logout failed with response code: " + conn.getResponseCode());
         }
 
-        return new Scanner(conn.getInputStream()).useDelimiter("\\A").next();
+        try (Scanner scanner = new Scanner(conn.getInputStream())) {
+            return scanner.useDelimiter("\\A").next();
+        }
     }
 
     // Create a new game

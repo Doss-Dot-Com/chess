@@ -1,6 +1,7 @@
 package client;
 
 import dataaccess.DataAccessException;
+import model.AuthData;
 import org.junit.jupiter.api.*;
 import server.Server;
 import java.io.IOException;
@@ -75,25 +76,15 @@ public class ServerFacadeTests {
 
     @Test
     public void testCreateGameSuccess() throws IOException {
-        // Register and log in to retrieve a valid authToken
-        facade.register("loginUser", "password123", "loginuser@example.com");
-        String authToken = facade.login("loginUser", "password123");
+        facade.register("gameCreator", "password123", "gamecreator@example.com");
+        String authToken = facade.login("gameCreator", "password123");
 
-        // Log the authToken for debugging
-        System.out.println("Obtained authToken for testCreateGameSuccess: " + authToken);
-
-        // Ensure the authToken is valid and attempt to create the game
         assertNotNull(authToken, "Auth token should not be null after login");
-        assertTrue(authToken.length() > 0, "Auth token should not be empty");
+        assertFalse(authToken.isEmpty(), "Auth token should not be empty");
 
-        // Create game and handle possible IOException
-        try {
-            String response = facade.createGame(authToken, "Game1");
-            assertNotNull(response, "Response from createGame should not be null");
-            assertTrue(response.contains("gameId"), "Response should contain 'gameId'");
-        } catch (IOException e) {
-            fail("Game creation failed with message: " + e.getMessage());
-        }
+        String response = facade.createGame(authToken, "Game1");
+        assertNotNull(response, "Response from createGame should not be null");
+        assertTrue(response.contains("gameId"), "Response should contain 'gameId'");
     }
 
 
@@ -106,7 +97,13 @@ public class ServerFacadeTests {
 
     @Test
     public void testListGamesSuccess() throws IOException {
-        String authToken = facade.login("loginUser", "password123");
+        facade.register("userListGames", "password123", "listgames@example.com");
+        String authToken = facade.login("userListGames", "password123");
+
+        // Confirm authToken is valid before listing games
+        assertNotNull(authToken, "Auth token should not be null after login");
+        assertFalse(authToken.isEmpty(), "Auth token should not be empty");
+
         facade.createGame(authToken, "GameListTest");
         String response = facade.listGames(authToken);
         assertNotNull(response);
