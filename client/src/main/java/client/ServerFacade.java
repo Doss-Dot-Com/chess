@@ -1,12 +1,18 @@
 package client;
 
+import model.GameRequest;
+import com.google.gson.Gson;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Scanner;
 
 public class ServerFacade {
     private final String serverUrl;
+    private final Gson gson = new Gson();
 
     public ServerFacade(String serverUrl) {
         this.serverUrl = serverUrl;
@@ -67,21 +73,33 @@ public class ServerFacade {
 
     // Create a new game
     public String createGame(String authToken, String gameName) throws IOException {
-        URL url = new URL(serverUrl + "/game");
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setRequestMethod("POST");
-        conn.setRequestProperty("Authorization", authToken);
-        conn.setRequestProperty("Content-Type", "application/json");
-        conn.setDoOutput(true);
+        HttpURLConnection connection = (HttpURLConnection) new URL(serverUrl + "/game").openConnection();
+        connection.setRequestMethod("POST");
+        connection.setRequestProperty("Authorization", authToken);
+        connection.setDoOutput(true);
+        connection.setRequestProperty("Content-Type", "application/json");
 
-        String requestBody = String.format("{\"gameName\":\"%s\"}", gameName);
-        conn.getOutputStream().write(requestBody.getBytes());
+        GameRequest gameRequest = new GameRequest(gameName);
+        String jsonInputString = gson.toJson(gameRequest);
 
-        if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
-            throw new IOException("Game creation failed with response code: " + conn.getResponseCode());
+        try (OutputStream os = connection.getOutputStream()) {
+            byte[] input = jsonInputString.getBytes("utf-8");
+            os.write(input, 0, input.length);
         }
 
-        return new Scanner(conn.getInputStream()).useDelimiter("\\A").next();
+        int responseCode = connection.getResponseCode();
+        if (responseCode == 200) {
+            try (BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream(), "utf-8"))) {
+                StringBuilder response = new StringBuilder();
+                String responseLine;
+                while ((responseLine = br.readLine()) != null) {
+                    response.append(responseLine.trim());
+                }
+                return response.toString();
+            }
+        } else {
+            throw new IOException("Game creation failed with response code: " + responseCode);
+        }
     }
 
     // List games

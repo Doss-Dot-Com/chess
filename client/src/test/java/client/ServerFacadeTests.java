@@ -75,11 +75,27 @@ public class ServerFacadeTests {
 
     @Test
     public void testCreateGameSuccess() throws IOException {
+        // Register and log in to retrieve a valid authToken
+        facade.register("loginUser", "password123", "loginuser@example.com");
         String authToken = facade.login("loginUser", "password123");
-        String response = facade.createGame(authToken, "Game1");
-        assertNotNull(response);
-        assertTrue(response.contains("gameId"));
+
+        // Log the authToken for debugging
+        System.out.println("Obtained authToken for testCreateGameSuccess: " + authToken);
+
+        // Ensure the authToken is valid and attempt to create the game
+        assertNotNull(authToken, "Auth token should not be null after login");
+        assertTrue(authToken.length() > 0, "Auth token should not be empty");
+
+        // Create game and handle possible IOException
+        try {
+            String response = facade.createGame(authToken, "Game1");
+            assertNotNull(response, "Response from createGame should not be null");
+            assertTrue(response.contains("gameId"), "Response should contain 'gameId'");
+        } catch (IOException e) {
+            fail("Game creation failed with message: " + e.getMessage());
+        }
     }
+
 
     @Test
     public void testCreateGameFailure() {
