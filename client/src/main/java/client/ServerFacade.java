@@ -75,18 +75,26 @@ public class ServerFacade {
         }
 
     // Create a new game
-    public String createGame(String authToken, String gameName, String username, String password) throws IOException {
-        try {
-            return createGameRequest(authToken, gameName);  // Attempt the request
-        } catch (IOException e) {
-            if (e.getMessage().contains("401")) {  // Check for Unauthorized response
-                System.out.println("Retrying createGame due to 401 Unauthorized...");
-                authToken = login(username, password);  // Re-login to get a new token
-                return createGameRequest(authToken, gameName);  // Retry the request
-            } else {
-                throw e;  // Propagate other errors
-            }
+    public String createGame(String authToken, String gameName) throws IOException {
+        URL url = new URL(serverUrl + "/game");
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("POST");
+        conn.setRequestProperty("Authorization", authToken);  // Only the token string, not JSON
+        conn.setRequestProperty("Content-Type", "application/json");
+
+        // JSON payload for game creation
+        String jsonInputString = "{\"gameName\":\"" + gameName + "\"}";
+        conn.setDoOutput(true);
+        try (OutputStream os = conn.getOutputStream()) {
+            byte[] input = jsonInputString.getBytes("utf-8");
+            os.write(input, 0, input.length);
         }
+
+        if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
+            throw new IOException("Game creation failed with response code: " + conn.getResponseCode());
+        }
+
+        return new Scanner(conn.getInputStream()).useDelimiter("\\A").next();
     }
 
     private String createGameRequest(String authToken, String gameName) throws IOException {
@@ -134,16 +142,20 @@ public class ServerFacade {
     }
 
     // Join game
-    public String joinGame(String authToken, int gameId, String playerColor, String username) throws IOException {
+    public String joinGame(String authToken, int gameId, String color) throws IOException {
         URL url = new URL(serverUrl + "/game");
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("PUT");
-        conn.setRequestProperty("Authorization", authToken);
+        conn.setRequestProperty("Authorization", authToken);  // Only the token string
         conn.setRequestProperty("Content-Type", "application/json");
-        conn.setDoOutput(true);
 
-        String requestBody = String.format("{\"gameID\":%d,\"playerColor\":\"%s\",\"username\":\"%s\"}", gameId, playerColor, username);
-        conn.getOutputStream().write(requestBody.getBytes());
+        // JSON payload for join game
+        String jsonInputString = "{\"gameID\":" + gameId + ",\"playerColor\":\"" + color + "\"}";
+        conn.setDoOutput(true);
+        try (OutputStream os = conn.getOutputStream()) {
+            byte[] input = jsonInputString.getBytes("utf-8");
+            os.write(input, 0, input.length);
+        }
 
         if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
             throw new IOException("Join game failed with response code: " + conn.getResponseCode());
@@ -151,6 +163,7 @@ public class ServerFacade {
 
         return new Scanner(conn.getInputStream()).useDelimiter("\\A").next();
     }
+
 }
 
 

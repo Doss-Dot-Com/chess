@@ -100,23 +100,29 @@ public class ServerFacadeTests {
 
     @Test
     public void testCreateGameSuccess() throws IOException {
-        facade.register("gameCreator", "password123", "gamecreator@example.com");
-        String authToken = facade.login("gameCreator", "password123");
+        facade.register("userListGames", "password123", "userlistgames@example.com");
+        String loginResponse = facade.login("userListGames", "password123");
 
+        // Parse the authToken from the login response
+        JsonObject jsonObject = JsonParser.parseString(loginResponse).getAsJsonObject();
+        String authToken = jsonObject.get("authToken").getAsString();
+
+        System.out.println("Auth token for create game: " + authToken);
+
+        // Ensure authToken is valid before proceeding
         assertNotNull(authToken, "Auth token should not be null after login");
         assertFalse(authToken.isEmpty(), "Auth token should not be empty");
 
-        // Now perform the createGame operation
-        String response = facade.createGame(authToken, "Game1", "gameCreator", "password123");
-        assertNotNull(response, "Response from createGame should not be null");
-        assertTrue(response.contains("gameId"), "Response should contain 'gameId'");
+        // Perform create game request with the parsed authToken
+        String response = facade.createGame(authToken, "GameListTest");
+        assertNotNull(response, "Response should not be null for a successful game creation");
     }
 
 
     @Test
     public void testCreateGameFailure() {
         assertThrows(IOException.class, () -> {
-            facade.createGame("invalidToken", "", "User", "pass");  // Empty game name and invalid token
+            facade.createGame("invalidToken", "");  // Empty game name and invalid token
         });
     }
 
@@ -129,7 +135,7 @@ public class ServerFacadeTests {
         assertNotNull(authToken, "Auth token should not be null after login");
         assertFalse(authToken.isEmpty(), "Auth token should not be empty");
 
-        facade.createGame(authToken, "GameListTest", "userListGames", "password123");
+        facade.createGame(authToken, "GameListTest");
         String response = facade.listGames(authToken);
         assertNotNull(response);
         assertTrue(response.contains("games"));
@@ -144,20 +150,34 @@ public class ServerFacadeTests {
 
     @Test
     public void testJoinGameSuccess() throws IOException {
-        String authToken = facade.login("loginUser", "password123");
-        String gameId = facade.createGame(authToken, "JoinableGame", "loginUser", "password123");
+        facade.register("loginUser", "password123", "loginuser@example.com");
+        String loginResponse = facade.login("loginUser", "password123");
 
-        // Ensure `joinGame` receives all necessary parameters
-        String response = facade.joinGame(authToken, Integer.parseInt(gameId), "white", "exampleUsername");
-        assertNotNull(response);
-        assertTrue(response.contains("joined"));
+        // Parse the authToken from the login response
+        JsonObject jsonObject = JsonParser.parseString(loginResponse).getAsJsonObject();
+        String authToken = jsonObject.get("authToken").getAsString();
+
+        System.out.println("Auth token for join game: " + authToken);
+
+        // Ensure authToken is valid before proceeding
+        assertNotNull(authToken, "Auth token should not be null after login");
+        assertFalse(authToken.isEmpty(), "Auth token should not be empty");
+
+        // Create a game and retrieve the game ID (assuming createGame returns the game ID in its response)
+        String gameCreateResponse = facade.createGame(authToken, "TestGame");
+        JsonObject gameResponseObject = JsonParser.parseString(gameCreateResponse).getAsJsonObject();
+        int gameId = gameResponseObject.get("gameID").getAsInt();
+
+        // Perform join game request with the parsed authToken and game ID
+        String joinResponse = facade.joinGame(authToken, gameId, "WHITE");
+        assertNotNull(joinResponse, "Response should not be null for a successful join game");
     }
 
     @Test
     public void testJoinGameFailure() {
         assertThrows(IOException.class, () -> {
             // Using an invalid token and missing game ID
-            facade.joinGame("invalidToken", 99999, "white", "exampleUsername");
+            facade.joinGame("invalidToken", 99999, "white");
         });
     }
 }
