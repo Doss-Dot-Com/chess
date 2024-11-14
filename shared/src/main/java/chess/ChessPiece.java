@@ -160,18 +160,22 @@ public class ChessPiece {
 
     // Adds valid moves for a rook
     private void addRookMoves(ChessBoard board, ChessPosition myPosition, Collection<ChessMove> moves) {
-        addStraightLineMoves(board, myPosition, moves, 1, 0);
-        addStraightLineMoves(board, myPosition, moves, -1, 0);
-        addStraightLineMoves(board, myPosition, moves, 0, 1);
-        addStraightLineMoves(board, myPosition, moves, 0, -1);
+        addLineMoves(board, myPosition, moves, 1, 0);  // Up
+        addLineMoves(board, myPosition, moves, -1, 0); // Down
+        addLineMoves(board, myPosition, moves, 0, 1);  // Right
+        addLineMoves(board, myPosition, moves, 0, -1); // Left
     }
 
-    // Adds valid moves for a bishop
     private void addBishopMoves(ChessBoard board, ChessPosition myPosition, Collection<ChessMove> moves) {
-        addDiagonalMoves(board, myPosition, moves, 1, 1);
-        addDiagonalMoves(board, myPosition, moves, 1, -1);
-        addDiagonalMoves(board, myPosition, moves, -1, 1);
-        addDiagonalMoves(board, myPosition, moves, -1, -1);
+        addLineMoves(board, myPosition, moves, 1, 1);   // Up-right
+        addLineMoves(board, myPosition, moves, 1, -1);  // Up-left
+        addLineMoves(board, myPosition, moves, -1, 1);  // Down-right
+        addLineMoves(board, myPosition, moves, -1, -1); // Down-left
+    }
+
+    private void addQueenMoves(ChessBoard board, ChessPosition myPosition, Collection<ChessMove> moves) {
+        addRookMoves(board, myPosition, moves);
+        addBishopMoves(board, myPosition, moves);
     }
 
     // Adds valid moves for a knight
@@ -187,12 +191,6 @@ public class ChessPiece {
                 moves.add(new ChessMove(myPosition, newPos, null));
             }
         }
-    }
-
-    // Adds valid moves for a queen (combines rook and bishop moves)
-    private void addQueenMoves(ChessBoard board, ChessPosition myPosition, Collection<ChessMove> moves) {
-        addRookMoves(board, myPosition, moves);
-        addBishopMoves(board, myPosition, moves);
     }
 
     // Adds valid moves for a king
@@ -211,7 +209,7 @@ public class ChessPiece {
     }
 
     // Adds valid straight-line moves for rook, bishop, or queen
-    private void addStraightLineMoves(ChessBoard board, ChessPosition myPosition, Collection<ChessMove> moves, int rowStep, int colStep) {
+    private void addLineMoves(ChessBoard board, ChessPosition myPosition, Collection<ChessMove> moves, int rowStep, int colStep) {
         int row = myPosition.getRow();
         int col = myPosition.getColumn();
         while (true) {
@@ -229,11 +227,6 @@ public class ChessPiece {
             }
             moves.add(new ChessMove(myPosition, newPos, null)); // Normal move
         }
-    }
-
-    // Adds valid diagonal moves for a bishop or queen
-    private void addDiagonalMoves(ChessBoard board, ChessPosition myPosition, Collection<ChessMove> moves, int rowStep, int colStep) {
-        addStraightLineMoves(board, myPosition, moves, rowStep, colStep);
     }
 
     // Checks if the position is valid within the chessboard boundaries
