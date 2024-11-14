@@ -14,7 +14,7 @@ public class ServerFacadeTests {
     @BeforeAll
     public static void init() {
         server = new Server();
-        var port = server.run(0);
+        int port = server.run(0);
         System.out.println("Started test HTTP server on " + port);
         facade = new ServerFacade("http://localhost:" + port);
     }
@@ -26,7 +26,7 @@ public class ServerFacadeTests {
 
     @BeforeEach
     public void clearDatabase() throws IOException, DataAccessException {
-        server.dataAccess.clear();
+        server.dataAccess.clear(); // Assuming `clear()` resets the necessary data
     }
 
     @Test
@@ -39,8 +39,9 @@ public class ServerFacadeTests {
     @Test
     public void testRegisterFailure() {
         assertThrows(IOException.class, () -> {
+            // Register with invalid inputs to trigger IOException
             facade.register("", "password123", "invalidemail");
-        });
+        }, "Expected IOException to be thrown for invalid registration");
     }
 
     @Test
@@ -62,7 +63,7 @@ public class ServerFacadeTests {
     public void testLogoutSuccess() throws IOException {
         String authToken = facade.login("loginUser", "password123");
         String response = facade.logout(authToken);
-        assertEquals("{}", response);
+        assertEquals("{}", response);  // Assuming a successful logout returns an empty JSON
     }
 
     @Test
@@ -74,7 +75,8 @@ public class ServerFacadeTests {
 
     @Test
     public void testCreateGameSuccess() throws IOException {
-        String response = facade.createGame("Game1");
+        String authToken = facade.login("loginUser", "password123");
+        String response = facade.createGame(authToken, "Game1");
         assertNotNull(response);
         assertTrue(response.contains("gameId"));
     }
@@ -82,14 +84,15 @@ public class ServerFacadeTests {
     @Test
     public void testCreateGameFailure() {
         assertThrows(IOException.class, () -> {
-            facade.createGame("");  // Empty game name
+            facade.createGame("invalidToken", "");  // Empty game name and invalid token
         });
     }
 
     @Test
     public void testListGamesSuccess() throws IOException {
-        facade.createGame("GameListTest");
-        String response = facade.listGames();
+        String authToken = facade.login("loginUser", "password123");
+        facade.createGame(authToken, "GameListTest");
+        String response = facade.listGames(authToken);
         assertNotNull(response);
         assertTrue(response.contains("games"));
     }
@@ -97,14 +100,17 @@ public class ServerFacadeTests {
     @Test
     public void testListGamesFailure() {
         assertThrows(IOException.class, () -> {
-            facade.listGames(); // Edge case: simulate server error if possible
+            facade.listGames("invalidToken");  // Edge case with an invalid token
         });
     }
 
     @Test
     public void testJoinGameSuccess() throws IOException {
-        int gameId = Integer.parseInt(facade.createGame("JoinableGame"));  // Ensure gameId is an integer
-        String response = facade.joinGame(gameId, "white", "testUser");  // Provide `username` as third argument
+        String authToken = facade.login("loginUser", "password123");
+        String gameId = facade.createGame(authToken, "JoinableGame");
+
+        // Ensure `joinGame` receives all necessary parameters
+        String response = facade.joinGame(authToken, Integer.parseInt(gameId), "white", "exampleUsername");
         assertNotNull(response);
         assertTrue(response.contains("joined"));
     }
@@ -112,10 +118,13 @@ public class ServerFacadeTests {
     @Test
     public void testJoinGameFailure() {
         assertThrows(IOException.class, () -> {
-            facade.joinGame(-1, "white", "testUser");  // Use invalid game ID
+            // Using an invalid token and missing game ID
+            facade.joinGame("invalidToken", 99999, "white", "exampleUsername");
         });
     }
 }
+
+
 
 
 
