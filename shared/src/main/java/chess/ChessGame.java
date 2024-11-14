@@ -173,24 +173,7 @@ public class ChessGame {
      * @return true if the team is in checkmate, false otherwise
      */
     public boolean isInCheckmate(TeamColor teamColor) {
-        if (!isInCheck(teamColor)) {
-            return false;
-        }
-
-        // Check if the team has any legal moves to get out of check
-        for (int row = 1; row <= 8; row++) {
-            for (int col = 1; col <= 8; col++) {
-                ChessPosition position = new ChessPosition(row, col);
-                ChessPiece piece = board.getPiece(position);
-                if (piece != null && piece.getTeamColor() == teamColor) {
-                    Collection<ChessMove> moves = validMoves(position);
-                    if (moves != null && !moves.isEmpty()) {
-                        return false; // There is at least one move that can escape the check
-                    }
-                }
-            }
-        }
-        return true;
+        return isInCheck(teamColor) && !hasLegalMoves(teamColor);
     }
 
     /**
@@ -200,24 +183,7 @@ public class ChessGame {
      * @return true if the team is in stalemate, false otherwise
      */
     public boolean isInStalemate(TeamColor teamColor) {
-        if (isInCheck(teamColor)) {
-            return false;
-        }
-
-        // Check if the team has any legal moves available
-        for (int row = 1; row <= 8; row++) {
-            for (int col = 1; col <= 8; col++) {
-                ChessPosition position = new ChessPosition(row, col);
-                ChessPiece piece = board.getPiece(position);
-                if (piece != null && piece.getTeamColor() == teamColor) {
-                    Collection<ChessMove> moves = validMoves(position);
-                    if (moves != null && !moves.isEmpty()) {
-                        return false; // There is at least one legal move
-                    }
-                }
-            }
-        }
-        return true;
+        return !isInCheck(teamColor) && !hasLegalMoves(teamColor);
     }
 
     // Setter for the board
@@ -228,6 +194,22 @@ public class ChessGame {
     // Getter for the board
     public ChessBoard getBoard() {
         return board;
+    }
+
+    private boolean hasLegalMoves(TeamColor teamColor) {
+        for (int row = 1; row <= 8; row++) {
+            for (int col = 1; col <= 8; col++) {
+                ChessPosition position = new ChessPosition(row, col);
+                ChessPiece piece = board.getPiece(position);
+                if (piece != null && piece.getTeamColor() == teamColor) {
+                    Collection<ChessMove> moves = validMoves(position);
+                    if (moves != null && !moves.isEmpty()) {
+                        return true; // There is at least one legal move
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     /**
