@@ -1,7 +1,9 @@
 package client;
 
+import dataaccess.DataAccessException;
 import org.junit.jupiter.api.*;
 import server.Server;
+import java.io.IOException;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ServerFacadeTests {
@@ -12,7 +14,7 @@ public class ServerFacadeTests {
     @BeforeAll
     public static void init() {
         server = new Server();
-        int port = server.run(0);
+        var port = server.run(0);
         System.out.println("Started test HTTP server on " + port);
         facade = new ServerFacade("http://localhost:" + port);
     }
@@ -23,129 +25,99 @@ public class ServerFacadeTests {
     }
 
     @BeforeEach
-    public void clearDatabase() throws Exception {
-        facade.logout();
-        // Assuming there is a clear endpoint or database reset functionality for testing
+    public void clearDatabase() throws IOException, DataAccessException {
+        server.dataAccess.clear();
     }
 
     @Test
-    public void testRegisterSuccess() {
-        try {
-            String response = facade.register("testUser", "password123", "test@example.com");
-            assertNotNull(response);
-            assertTrue(response.contains("authToken"));
-        } catch (Exception e) {
-            fail("Exception during successful registration: " + e.getMessage());
-        }
+    public void testRegisterSuccess() throws IOException {
+        String response = facade.register("newUser", "password123", "newuser@example.com");
+        assertNotNull(response);
+        assertTrue(response.contains("authToken"));
     }
 
     @Test
-    public void testRegisterDuplicateUsername() {
-        try {
-            facade.register("testUser", "password123", "test@example.com");
-            Exception exception = assertThrows(Exception.class, () -> {
-                facade.register("testUser", "password123", "test2@example.com");
-            });
-            assertTrue(exception.getMessage().contains("response code"));
-        } catch (Exception e) {
-            fail("Unexpected exception during duplicate username test: " + e.getMessage());
-        }
-    }
-
-    @Test
-    public void testLoginSuccess() {
-        try {
-            facade.register("testUser", "password123", "test@example.com");
-            String response = facade.login("testUser", "password123");
-            assertNotNull(response);
-            assertTrue(response.contains("authToken"));
-        } catch (Exception e) {
-            fail("Exception during successful login: " + e.getMessage());
-        }
-    }
-
-    @Test
-    public void testLoginInvalidCredentials() {
-        Exception exception = assertThrows(Exception.class, () -> {
-            facade.login("nonexistentUser", "wrongPassword");
+    public void testRegisterFailure() {
+        assertThrows(IOException.class, () -> {
+            facade.register("", "password123", "invalidemail");
         });
-        assertTrue(exception.getMessage().contains("response code"));
     }
 
     @Test
-    public void testLogoutSuccess() {
-        try {
-            facade.register("testUser", "password123", "test@example.com");
-            facade.login("testUser", "password123");
-            String response = facade.logout();
-            assertEquals("Logged out successfully", response);
-        } catch (Exception e) {
-            fail("Exception during successful logout: " + e.getMessage());
-        }
+    public void testLoginSuccess() throws IOException {
+        facade.register("loginUser", "password123", "loginuser@example.com");
+        String response = facade.login("loginUser", "password123");
+        assertNotNull(response);
+        assertTrue(response.contains("authToken"));
     }
 
     @Test
-    public void testCreateGameSuccess() {
-        try {
-            facade.register("testUser", "password123", "test@example.com");
-            facade.login("testUser", "password123");
-            String response = facade.createGame("MyGame");
-            assertNotNull(response);
-            assertTrue(response.contains("gameId"));
-        } catch (Exception e) {
-            fail("Exception during game creation: " + e.getMessage());
-        }
+    public void testLoginFailure() {
+        assertThrows(IOException.class, () -> {
+            facade.login("invalidUser", "wrongPassword");
+        });
     }
 
     @Test
-    public void testListGames() {
-        try {
-            facade.register("testUser", "password123", "test@example.com");
-            facade.login("testUser", "password123");
-            facade.createGame("MyGame");
-            String response = facade.listGames();
-            assertNotNull(response);
-            assertTrue(response.contains("MyGame"));
-        } catch (Exception e) {
-            fail("Exception during listing games: " + e.getMessage());
-        }
+    public void testLogoutSuccess() throws IOException {
+        String authToken = facade.login("loginUser", "password123");
+        String response = facade.logout(authToken);
+        assertEquals("{}", response);
     }
 
     @Test
-    public void testJoinGameSuccess() {
-        try {
-            facade.register("testUser", "password123", "test@example.com");
-            facade.login("testUser", "password123");
-            String gameResponse = facade.createGame("MyGame");
-            String gameId = parseGameId(gameResponse); // Helper method to parse gameId from response
-            String joinResponse = facade.joinGame(gameId, "white");
-            assertNotNull(joinResponse);
-            assertTrue(joinResponse.contains("joined"));
-        } catch (Exception e) {
-            fail("Exception during successful game join: " + e.getMessage());
-        }
+    public void testLogoutFailure() {
+        assertThrows(IOException.class, () -> {
+            facade.logout("invalidToken");
+        });
     }
 
     @Test
-    public void testJoinNonexistentGame() {
-        try {
-            facade.register("testUser", "password123", "test@example.com");
-            facade.login("testUser", "password123");
-            Exception exception = assertThrows(Exception.class, () -> {
-                facade.joinGame("nonexistentGameId", "white");
-            });
-            assertTrue(exception.getMessage().contains("response code"));
-        } catch (Exception e) {
-            fail("Unexpected exception during join nonexistent game test: " + e.getMessage());
-        }
+    public void testCreateGameSuccess() throws IOException {
+        String response = facade.createGame("Game1");
+        assertNotNull(response);
+        assertTrue(response.contains("gameId"));
     }
 
-    // Helper method to parse gameId from the createGame response (stub)
-    private String parseGameId(String gameResponse) {
-        int startIndex = gameResponse.indexOf("gameId") + 9;
-        int endIndex = gameResponse.indexOf("\"", startIndex);
-        return gameResponse.substring(startIndex, endIndex);
+    @Test
+    public void testCreateGameFailure() {
+        assertThrows(IOException.class, () -> {
+            facade.createGame("");  // Empty game name
+        });
+    }
+
+    @Test
+    public void testListGamesSuccess() throws IOException {
+        facade.createGame("GameListTest");
+        String response = facade.listGames();
+        assertNotNull(response);
+        assertTrue(response.contains("games"));
+    }
+
+    @Test
+    public void testListGamesFailure() {
+        assertThrows(IOException.class, () -> {
+            facade.listGames(); // Edge case: simulate server error if possible
+        });
+    }
+
+    @Test
+    public void testJoinGameSuccess() throws IOException {
+        int gameId = Integer.parseInt(facade.createGame("JoinableGame"));  // Ensure gameId is an integer
+        String response = facade.joinGame(gameId, "white", "testUser");  // Provide `username` as third argument
+        assertNotNull(response);
+        assertTrue(response.contains("joined"));
+    }
+
+    @Test
+    public void testJoinGameFailure() {
+        assertThrows(IOException.class, () -> {
+            facade.joinGame(-1, "white", "testUser");  // Use invalid game ID
+        });
     }
 }
+
+
+
 
 

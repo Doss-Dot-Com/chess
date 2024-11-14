@@ -14,7 +14,7 @@ import static spark.Spark.*;
 
 public class Server {
 
-    private MySqlDataAccess dataAccess;
+    public MySqlDataAccess dataAccess;
     private UserService userService;
     private GameService gameService;
 
