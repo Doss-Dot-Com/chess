@@ -93,7 +93,7 @@ public class ChessPiece {
 
         // Forward move
         ChessPosition forwardPosition = new ChessPosition(row + direction, col);
-        if (isPositionValid(board, forwardPosition) && board.getPiece(forwardPosition) == null) {
+        if (isPositionValid(forwardPosition) && board.getPiece(forwardPosition) == null) {
             addMoveOrPromotion(myPosition, forwardPosition, moves);
         }
 
@@ -108,7 +108,7 @@ public class ChessPiece {
         // Capture left
         if (col > 1) {
             ChessPosition captureLeft = new ChessPosition(row + direction, col - 1);
-            if (isPositionValid(board, captureLeft) && board.getPiece(captureLeft) != null &&
+            if (isPositionValid(captureLeft) && board.getPiece(captureLeft) != null &&
                     board.getPiece(captureLeft).getTeamColor() != this.pieceColor) {
                 addMoveOrPromotion(myPosition, captureLeft, moves);
             }
@@ -117,7 +117,7 @@ public class ChessPiece {
         // Capture right
         if (col < 8) {
             ChessPosition captureRight = new ChessPosition(row + direction, col + 1);
-            if (isPositionValid(board, captureRight) && board.getPiece(captureRight) != null &&
+            if (isPositionValid(captureRight) && board.getPiece(captureRight) != null &&
                     board.getPiece(captureRight).getTeamColor() != this.pieceColor) {
                 addMoveOrPromotion(myPosition, captureRight, moves);
             }
@@ -185,7 +185,7 @@ public class ChessPiece {
         };
         for (int[] move : knightMoves) {
             ChessPosition newPos = new ChessPosition(myPosition.getRow() + move[0], myPosition.getColumn() + move[1]);
-            if (isPositionValid(board, newPos) &&
+            if (isPositionValid(newPos) &&
                     (board.getPiece(newPos) == null || board.getPiece(newPos).getTeamColor() != this.pieceColor)) {
                 moves.add(new ChessMove(myPosition, newPos, null));
             }
@@ -200,7 +200,7 @@ public class ChessPiece {
         };
         for (int[] move : kingMoves) {
             ChessPosition newPos = new ChessPosition(myPosition.getRow() + move[0], myPosition.getColumn() + move[1]);
-            if (isPositionValid(board, newPos) &&
+            if (isPositionValid(newPos) &&
                     (board.getPiece(newPos) == null || board.getPiece(newPos).getTeamColor() != this.pieceColor)) {
                 moves.add(new ChessMove(myPosition, newPos, null));
             }
@@ -215,7 +215,7 @@ public class ChessPiece {
             row += rowStep;
             col += colStep;
             ChessPosition newPos = new ChessPosition(row, col);
-            if (!isPositionValid(board, newPos)) {
+            if (!isPositionValid(newPos)) {
                 break;
             }
             if (board.getPiece(newPos) != null) {
@@ -229,7 +229,7 @@ public class ChessPiece {
     }
 
     // Checks if the position is valid within the chessboard boundaries
-    private boolean isPositionValid(ChessBoard board, ChessPosition pos) {
+    private boolean isPositionValid(ChessPosition pos) {
         return pos.getRow() >= 1 && pos.getRow() <= 8 && pos.getColumn() >= 1 && pos.getColumn() <= 8;
     }
 
