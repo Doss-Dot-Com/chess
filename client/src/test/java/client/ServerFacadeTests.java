@@ -127,18 +127,29 @@ public class ServerFacadeTests {
     }
 
     @Test
-    public void testListGamesSuccess() throws IOException {
-        facade.register("userListGames", "password123", "listgames@example.com");
-        String authToken = facade.login("userListGames", "password123");
+    public void testListGameSuccess() throws IOException {
+        // Register and login to get the auth token
+        facade.register("userListGames", "password123", "userlistgames@example.com");
+        String loginResponse = facade.login("userListGames", "password123");
 
-        // Confirm authToken is valid before listing games
+        // Extract the authToken from the login response
+        JsonObject jsonObject = JsonParser.parseString(loginResponse).getAsJsonObject();
+        String authToken = jsonObject.get("authToken").getAsString();
+
+        System.out.println("Auth token for list games: " + authToken);
+
+        // Ensure the auth token is not null or empty
         assertNotNull(authToken, "Auth token should not be null after login");
         assertFalse(authToken.isEmpty(), "Auth token should not be empty");
 
+        // Create a game to ensure there is something to list
         facade.createGame(authToken, "GameListTest");
-        String response = facade.listGames(authToken);
-        assertNotNull(response);
-        assertTrue(response.contains("games"));
+
+        // Perform list games request with the parsed authToken
+        String listGamesResponse = facade.listGames(authToken);
+
+        // Check that the listGamesResponse contains the created game name (e.g., "GameListTest")
+        assertTrue(listGamesResponse.contains("GameListTest"), "Response should contain the created game's name");
     }
 
     @Test
