@@ -41,7 +41,7 @@ public class ServerFacadeTests {
         assertThrows(IOException.class, () -> {
             // Register with invalid inputs to trigger IOException
             facade.register("", "password123", "invalidemail");
-        }, "Expected IOException to be thrown for invalid registration");
+        }, "Expected java.io.IOException to be thrown, but nothing was thrown.");
     }
 
     @Test

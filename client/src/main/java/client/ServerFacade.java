@@ -23,6 +23,9 @@ public class ServerFacade {
         String requestBody = String.format("{\"username\":\"%s\",\"password\":\"%s\",\"email\":\"%s\"}", username, password, email);
         conn.getOutputStream().write(requestBody.getBytes());
 
+        if (username == null || username.isEmpty() || password == null || password.isEmpty() || email == null || email.isEmpty()) {
+            throw new IOException("Invalid input: username, password, and extraField are required.");
+        }
         if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
             throw new IOException("Registration failed with response code: " + conn.getResponseCode());
         }
