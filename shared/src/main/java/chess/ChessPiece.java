@@ -91,50 +91,45 @@ public class ChessPiece {
         int col = myPosition.getColumn();
         int direction = (this.pieceColor == ChessGame.TeamColor.WHITE) ? 1 : -1;
 
-        // PAWN MOVE FORWARD LOGIC
+        // Forward move
         ChessPosition forwardPosition = new ChessPosition(row + direction, col);
         if (isPositionValid(board, forwardPosition) && board.getPiece(forwardPosition) == null) {
-            if (isPromotion(row + direction)) {
-                addPromotionMoves(myPosition, forwardPosition, moves);
-            } else {
-                moves.add(new ChessMove(myPosition, forwardPosition, null)); // Normal pawn forward move
-            }
+            addMoveOrPromotion(myPosition, forwardPosition, moves);
         }
 
-        // INITIAL MOVE - MOVE TWO SQUARES IF NOT BLOCKED
+        // Initial two-square move
         if (isPawnInitialPosition(row)) {
-            ChessPosition forwardOneStep = new ChessPosition(row + direction, col);
             ChessPosition twoStepsForward = new ChessPosition(row + 2 * direction, col);
-            if (isPositionValid(board, forwardOneStep) && isPositionValid(board, twoStepsForward) &&
-                    board.getPiece(forwardOneStep) == null && board.getPiece(twoStepsForward) == null) {
+            if (board.getPiece(forwardPosition) == null && board.getPiece(twoStepsForward) == null) {
                 moves.add(new ChessMove(myPosition, twoStepsForward, null));
             }
         }
 
-        // CAPTURE LEFT
+        // Capture left
         if (col > 1) {
             ChessPosition captureLeft = new ChessPosition(row + direction, col - 1);
             if (isPositionValid(board, captureLeft) && board.getPiece(captureLeft) != null &&
                     board.getPiece(captureLeft).getTeamColor() != this.pieceColor) {
-                if (isPromotion(row + direction)) {
-                    addPromotionMoves(myPosition, captureLeft, moves);
-                } else {
-                    moves.add(new ChessMove(myPosition, captureLeft, null));
-                }
+                addMoveOrPromotion(myPosition, captureLeft, moves);
             }
         }
 
-        // CAPTURE RIGHT
+        // Capture right
         if (col < 8) {
             ChessPosition captureRight = new ChessPosition(row + direction, col + 1);
             if (isPositionValid(board, captureRight) && board.getPiece(captureRight) != null &&
                     board.getPiece(captureRight).getTeamColor() != this.pieceColor) {
-                if (isPromotion(row + direction)) {
-                    addPromotionMoves(myPosition, captureRight, moves);
-                } else {
-                    moves.add(new ChessMove(myPosition, captureRight, null));
-                }
+                addMoveOrPromotion(myPosition, captureRight, moves);
             }
+        }
+    }
+
+    // Helper method for adding a move or promotion for pawns
+    private void addMoveOrPromotion(ChessPosition start, ChessPosition end, Collection<ChessMove> moves) {
+        if (isPromotion(end.getRow())) {
+            addPromotionMoves(start, end, moves);
+        } else {
+            moves.add(new ChessMove(start, end, null)); // Normal move
         }
     }
 
