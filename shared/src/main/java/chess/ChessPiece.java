@@ -61,13 +61,26 @@ public class ChessPiece {
         }
 
         switch (piece.getPieceType()) {
-            case PAWN -> addPawnMoves(board, myPosition, moves);
-            case ROOK -> addRookMoves(board, myPosition, moves);
-            case BISHOP -> addBishopMoves(board, myPosition, moves);
-            case KNIGHT -> addKnightMoves(board, myPosition, moves);
-            case QUEEN -> addQueenMoves(board, myPosition, moves);
-            case KING -> addKingMoves(board, myPosition, moves);
-            default -> throw new IllegalStateException("Error: Unexpected piece type: " + piece);
+            case PAWN:
+                addPawnMoves(board, myPosition, moves);
+                break;
+            case ROOK:
+                addRookMoves(board, myPosition, moves);
+                break;
+            case BISHOP:
+                addBishopMoves(board, myPosition, moves);
+                break;
+            case KNIGHT:
+                addKnightMoves(board, myPosition, moves);
+                break;
+            case QUEEN:
+                addQueenMoves(board, myPosition, moves);
+                break;
+            case KING:
+                addKingMoves(board, myPosition, moves);
+                break;
+            default:
+                throw new IllegalStateException("Error: Unexpected piece type: " + piece);
         }
         return moves;
     }

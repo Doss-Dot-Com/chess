@@ -13,6 +13,12 @@
 
     <packaging>jar</packaging>
 
+    <!-- Set Java version for Maven Compiler Plugin -->
+    <properties>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+    </properties>
+
     <build>
         <finalName>client</finalName>
         <plugins>
