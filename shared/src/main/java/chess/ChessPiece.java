@@ -169,8 +169,17 @@ public class ChessPiece {
     }
 
     private void addQueenMoves(ChessBoard board, ChessPosition myPosition, Collection<ChessMove> moves) {
-        addRookMoves(board, myPosition, moves);
-        addBishopMoves(board, myPosition, moves);
+        // Straight-line moves
+        addLineMoves(board, myPosition, moves, 1, 0);  // Up
+        addLineMoves(board, myPosition, moves, -1, 0); // Down
+        addLineMoves(board, myPosition, moves, 0, 1);  // Right
+        addLineMoves(board, myPosition, moves, 0, -1); // Left
+
+        // Diagonal moves
+        addLineMoves(board, myPosition, moves, 1, 1);   // Up-right
+        addLineMoves(board, myPosition, moves, 1, -1);  // Up-left
+        addLineMoves(board, myPosition, moves, -1, 1);  // Down-right
+        addLineMoves(board, myPosition, moves, -1, -1); // Down-left
     }
 
     // Adds valid moves for a knight
