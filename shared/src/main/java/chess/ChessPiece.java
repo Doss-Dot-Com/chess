@@ -155,31 +155,26 @@ public class ChessPiece {
 
     // Adds valid moves for a rook
     private void addRookMoves(ChessBoard board, ChessPosition myPosition, Collection<ChessMove> moves) {
-        addLineMoves(board, myPosition, moves, 1, 0);  // Up
-        addLineMoves(board, myPosition, moves, -1, 0); // Down
-        addLineMoves(board, myPosition, moves, 0, 1);  // Right
-        addLineMoves(board, myPosition, moves, 0, -1); // Left
+        int[][] rookDirections = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+        for (int[] dir : rookDirections) {
+            addLineMoves(board, myPosition, moves, dir[0], dir[1]);
+        }
     }
 
+    // Adds valid moves for a bishop
     private void addBishopMoves(ChessBoard board, ChessPosition myPosition, Collection<ChessMove> moves) {
-        addLineMoves(board, myPosition, moves, 1, 1);   // Up-right
-        addLineMoves(board, myPosition, moves, 1, -1);  // Up-left
-        addLineMoves(board, myPosition, moves, -1, 1);  // Down-right
-        addLineMoves(board, myPosition, moves, -1, -1); // Down-left
+        int[][] bishopDirections = {{1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
+        for (int[] dir : bishopDirections) {
+            addLineMoves(board, myPosition, moves, dir[0], dir[1]);
+        }
     }
 
+    // Adds valid moves for a queen (combines straight-line and diagonal moves)
     private void addQueenMoves(ChessBoard board, ChessPosition myPosition, Collection<ChessMove> moves) {
-        // Straight-line moves
-        addLineMoves(board, myPosition, moves, 1, 0);  // Up
-        addLineMoves(board, myPosition, moves, -1, 0); // Down
-        addLineMoves(board, myPosition, moves, 0, 1);  // Right
-        addLineMoves(board, myPosition, moves, 0, -1); // Left
-
-        // Diagonal moves
-        addLineMoves(board, myPosition, moves, 1, 1);   // Up-right
-        addLineMoves(board, myPosition, moves, 1, -1);  // Up-left
-        addLineMoves(board, myPosition, moves, -1, 1);  // Down-right
-        addLineMoves(board, myPosition, moves, -1, -1); // Down-left
+        int[][] queenDirections = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
+        for (int[] dir : queenDirections) {
+            addLineMoves(board, myPosition, moves, dir[0], dir[1]);
+        }
     }
 
     // Adds valid moves for a knight
