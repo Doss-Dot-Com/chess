@@ -4,6 +4,7 @@ import dataaccess.*;
 import model.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mindrot.jbcrypt.BCrypt;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -41,17 +42,23 @@ public class UserServiceTest {
 
     @Test
     public void testLoginSuccess() throws DataAccessException {
-        UserData user = new UserData("existingUser", "password", "email@test.com");
+        // Create user with hashed password
+        UserData user = new UserData("existingUser", BCrypt.hashpw("password", BCrypt.gensalt()), "email@test.com");
         dataAccess.createUser(user);
-        AuthData authData = userService.login(user);
-        assertNotNull(authData);
+
+        // Attempt login with correct password
+        AuthData authData = userService.login(new UserData("existingUser", "password", "email@test.com"));
+        assertNotNull(authData);  // Ensure login succeeds and returns auth data
     }
 
     @Test
     public void testLoginFailureWrongPassword() throws DataAccessException {
-        UserData user = new UserData("existingUser", "wrongPassword", "email@test.com");
-        dataAccess.createUser(new UserData("existingUser", "password", "email@test.com"));
-        assertThrows(DataAccessException.class, () -> userService.login(user));
+        // Create user with correct hashed password
+        UserData user = new UserData("existingUser", BCrypt.hashpw("password", BCrypt.gensalt()), "email@test.com");
+        dataAccess.createUser(user);
+
+        // Attempt login with wrong password
+        assertThrows(DataAccessException.class, () -> userService.login(new UserData("existingUser", "wrongPassword", "email@test.com")));
     }
 
     @Test

@@ -158,18 +158,35 @@ public class MySqlDataAccess implements DataAccess {
 
     @Override
     public void updateGame(GameData game) throws DataAccessException {
-        String statement = "UPDATE games SET gameName = ?, whiteUsername = ?, blackUsername = ? WHERE gameID = ?";
-        try (Connection conn = DatabaseManager.getConnection();
-             PreparedStatement ps = conn.prepareStatement(statement)) {
-            ps.setString(1, game.getGameName());
-            ps.setString(2, game.getWhiteUsername());
-            ps.setString(3, game.getBlackUsername());
-            ps.setInt(4, game.getGameID());
-            ps.executeUpdate();
+        String checkStatement = "SELECT COUNT(*) FROM games WHERE gameID = ?";
+        String updateStatement = "UPDATE games SET gameName = ?, whiteUsername = ?, blackUsername = ? WHERE gameID = ?";
+
+        try (Connection conn = DatabaseManager.getConnection()) {
+            // Check if the game exists
+            try (PreparedStatement checkPs = conn.prepareStatement(checkStatement)) {
+                checkPs.setInt(1, game.getGameID());
+                try (ResultSet rs = checkPs.executeQuery()) {
+                    rs.next();
+                    if (rs.getInt(1) == 0) {
+                        throw new DataAccessException("Game with ID " + game.getGameID() + " does not exist.");
+                    }
+                }
+            }
+
+            // If game exists, proceed with update
+            try (PreparedStatement ps = conn.prepareStatement(updateStatement)) {
+                ps.setString(1, game.getGameName());
+                ps.setString(2, game.getWhiteUsername());
+                ps.setString(3, game.getBlackUsername());
+                ps.setInt(4, game.getGameID());
+                ps.executeUpdate();
+            }
+
         } catch (SQLException e) {
             throw new DataAccessException("Error updating game: " + e.getMessage());
         }
     }
+
 
     @Override
     public List<GameData> getAllGames() throws DataAccessException {

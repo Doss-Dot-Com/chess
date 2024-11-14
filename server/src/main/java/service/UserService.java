@@ -51,15 +51,19 @@ public class UserService {
 
     public AuthData login(UserData user) throws DataAccessException {
         UserData storedUser = dataAccess.getUser(user.username());
-
-        if (storedUser == null || !BCrypt.checkpw(user.password(), storedUser.password())) {
-            throw new DataAccessException("Invalid username or password");
+        if (storedUser == null) {
+            throw new DataAccessException("User not found");
         }
 
-        // Generate and store the token if login is successful
-        AuthData authData = new AuthData(generateAuthToken(), user.username());
+        // Use BCrypt to check if the provided password matches the stored hashed password
+        if (!BCrypt.checkpw(user.password(), storedUser.password())) {
+            throw new DataAccessException("Incorrect password");
+        }
+
+        // Generate an AuthData token if password is correct
+        String authToken = generateAuthToken();
+        AuthData authData = new AuthData(authToken, user.username());
         dataAccess.createAuth(authData);
-        System.out.println("Token created: " + authData.getAuthToken() + " for user: " + user.username());  // Log token creation
         return authData;
     }
 
