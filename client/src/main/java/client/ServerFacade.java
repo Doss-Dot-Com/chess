@@ -1,6 +1,8 @@
 package client;
 
 import model.GameRequest;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.google.gson.Gson;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -54,34 +56,43 @@ public class ServerFacade {
             throw new IOException("Login failed with response code: " + conn.getResponseCode());
         }
 
+        // Read the response as a plain string
         return new Scanner(conn.getInputStream()).useDelimiter("\\A").next();
     }
 
-    // Logout
-    public String logout(String authToken) throws IOException {
-        if (authToken == null || authToken.isEmpty()) {
-            throw new IOException("Invalid authToken: Token cannot be null or empty.");
+        // Logout
+        public String logout(String authToken) throws IOException {
+            URL url = new URL(serverUrl + "/session");
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("DELETE");
+            conn.setRequestProperty("Authorization", authToken);
+
+            if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
+                throw new IOException("Logout failed with response code: " + conn.getResponseCode());
+            }
+
+            return new Scanner(conn.getInputStream()).useDelimiter("\\A").next();
         }
 
-        URL url = new URL(serverUrl + "/session");
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setRequestMethod("DELETE");
-        conn.setRequestProperty("Authorization", authToken);
-
-        if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
-            throw new IOException("Logout failed with response code: " + conn.getResponseCode());
-        }
-
-        try (Scanner scanner = new Scanner(conn.getInputStream())) {
-            return scanner.useDelimiter("\\A").next();
+    // Create a new game
+    public String createGame(String authToken, String gameName, String username, String password) throws IOException {
+        try {
+            return createGameRequest(authToken, gameName);  // Attempt the request
+        } catch (IOException e) {
+            if (e.getMessage().contains("401")) {  // Check for Unauthorized response
+                System.out.println("Retrying createGame due to 401 Unauthorized...");
+                authToken = login(username, password);  // Re-login to get a new token
+                return createGameRequest(authToken, gameName);  // Retry the request
+            } else {
+                throw e;  // Propagate other errors
+            }
         }
     }
 
-    // Create a new game
-    public String createGame(String authToken, String gameName) throws IOException {
+    private String createGameRequest(String authToken, String gameName) throws IOException {
         HttpURLConnection connection = (HttpURLConnection) new URL(serverUrl + "/game").openConnection();
         connection.setRequestMethod("POST");
-        connection.setRequestProperty("Authorization", authToken);
+        connection.setRequestProperty("Authorization", authToken);  // Pass only the token, not JSON
         connection.setDoOutput(true);
         connection.setRequestProperty("Content-Type", "application/json");
 

@@ -1,5 +1,7 @@
 package client;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import dataaccess.DataAccessException;
 import model.AuthData;
 import org.junit.jupiter.api.*;
@@ -13,12 +15,16 @@ public class ServerFacadeTests {
     private static ServerFacade facade;
 
     @BeforeAll
-    public static void init() {
+    public static void init() throws InterruptedException {
         server = new Server();
         int port = server.run(0);
         System.out.println("Started test HTTP server on " + port);
         facade = new ServerFacade("http://localhost:" + port);
+
+        // Wait for a moment to ensure server is fully initialized
+        Thread.sleep(1000);  // Wait for 1 second
     }
+
 
     @AfterAll
     public static void stopServer() {
@@ -49,8 +55,12 @@ public class ServerFacadeTests {
     public void testLoginSuccess() throws IOException {
         facade.register("loginUser", "password123", "loginuser@example.com");
         String response = facade.login("loginUser", "password123");
-        assertNotNull(response);
-        assertTrue(response.contains("authToken"));
+
+        // Log the response for inspection
+        System.out.println("Login response: " + response);
+
+        assertNotNull(response, "Response should not be null");
+        assertTrue(response.contains("authToken"), "Response should contain 'authToken'");
     }
 
     @Test
@@ -62,10 +72,24 @@ public class ServerFacadeTests {
 
     @Test
     public void testLogoutSuccess() throws IOException {
-        String authToken = facade.login("loginUser", "password123");
+        facade.register("loginUser", "password123", "loginuser@example.com");
+        String loginResponse = facade.login("loginUser", "password123");
+
+        // Parse the authToken from the login response
+        JsonObject jsonObject = JsonParser.parseString(loginResponse).getAsJsonObject();
+        String authToken = jsonObject.get("authToken").getAsString();
+
+        System.out.println("Auth token for logout: " + authToken);
+
+        // Ensure authToken is valid before proceeding
+        assertNotNull(authToken, "Auth token should not be null after login");
+        assertFalse(authToken.isEmpty(), "Auth token should not be empty");
+
+        // Perform logout with the parsed authToken
         String response = facade.logout(authToken);
-        assertEquals("{}", response);  // Assuming a successful logout returns an empty JSON
+        assertEquals("{}", response, "Expected successful logout to return an empty JSON object");
     }
+
 
     @Test
     public void testLogoutFailure() {
@@ -82,7 +106,8 @@ public class ServerFacadeTests {
         assertNotNull(authToken, "Auth token should not be null after login");
         assertFalse(authToken.isEmpty(), "Auth token should not be empty");
 
-        String response = facade.createGame(authToken, "Game1");
+        // Now perform the createGame operation
+        String response = facade.createGame(authToken, "Game1", "gameCreator", "password123");
         assertNotNull(response, "Response from createGame should not be null");
         assertTrue(response.contains("gameId"), "Response should contain 'gameId'");
     }
@@ -91,7 +116,7 @@ public class ServerFacadeTests {
     @Test
     public void testCreateGameFailure() {
         assertThrows(IOException.class, () -> {
-            facade.createGame("invalidToken", "");  // Empty game name and invalid token
+            facade.createGame("invalidToken", "", "User", "pass");  // Empty game name and invalid token
         });
     }
 
@@ -104,7 +129,7 @@ public class ServerFacadeTests {
         assertNotNull(authToken, "Auth token should not be null after login");
         assertFalse(authToken.isEmpty(), "Auth token should not be empty");
 
-        facade.createGame(authToken, "GameListTest");
+        facade.createGame(authToken, "GameListTest", "userListGames", "password123");
         String response = facade.listGames(authToken);
         assertNotNull(response);
         assertTrue(response.contains("games"));
@@ -120,7 +145,7 @@ public class ServerFacadeTests {
     @Test
     public void testJoinGameSuccess() throws IOException {
         String authToken = facade.login("loginUser", "password123");
-        String gameId = facade.createGame(authToken, "JoinableGame");
+        String gameId = facade.createGame(authToken, "JoinableGame", "loginUser", "password123");
 
         // Ensure `joinGame` receives all necessary parameters
         String response = facade.joinGame(authToken, Integer.parseInt(gameId), "white", "exampleUsername");
