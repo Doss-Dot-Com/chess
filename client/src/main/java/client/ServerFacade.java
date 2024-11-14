@@ -97,36 +97,6 @@ public class ServerFacade {
         return new Scanner(conn.getInputStream()).useDelimiter("\\A").next();
     }
 
-    private String createGameRequest(String authToken, String gameName) throws IOException {
-        HttpURLConnection connection = (HttpURLConnection) new URL(serverUrl + "/game").openConnection();
-        connection.setRequestMethod("POST");
-        connection.setRequestProperty("Authorization", authToken);  // Pass only the token, not JSON
-        connection.setDoOutput(true);
-        connection.setRequestProperty("Content-Type", "application/json");
-
-        GameRequest gameRequest = new GameRequest(gameName);
-        String jsonInputString = gson.toJson(gameRequest);
-
-        try (OutputStream os = connection.getOutputStream()) {
-            byte[] input = jsonInputString.getBytes("utf-8");
-            os.write(input, 0, input.length);
-        }
-
-        int responseCode = connection.getResponseCode();
-        if (responseCode == 200) {
-            try (BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream(), "utf-8"))) {
-                StringBuilder response = new StringBuilder();
-                String responseLine;
-                while ((responseLine = br.readLine()) != null) {
-                    response.append(responseLine.trim());
-                }
-                return response.toString();
-            }
-        } else {
-            throw new IOException("Game creation failed with response code: " + responseCode);
-        }
-    }
-
     // List games
     public String listGames(String authToken) throws IOException {
         URL url = new URL(serverUrl + "/game");

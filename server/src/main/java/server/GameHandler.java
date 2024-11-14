@@ -154,11 +154,6 @@ public class GameHandler {
         });
     }
 
-    public void handleGameEndpoints() {
-        createGame();
-        joinGame();
-        listGames();
-    }
 }
 
 
