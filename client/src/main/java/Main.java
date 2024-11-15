@@ -1,16 +1,25 @@
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import java.io.IOException;
 import java.util.Scanner;
 import client.ServerFacade;
+import ui.EscapeSequences;
 
 public class Main {
 
     private static final Scanner scanner = new Scanner(System.in);
     private static ServerFacade serverFacade = new ServerFacade("http://localhost:8080"); // Replace with actual server URL
     private static String authToken = null;
+    private static final Gson gson = new Gson();
 
     public static void main(String[] args) {
         System.out.println("♕ Welcome to Chess Client! Type 'help' for available commands.");
         preloginUI();
+    }
+
+    private static String extractAuthToken(String jsonString) {
+        JsonObject jsonObject = gson.fromJson(jsonString, JsonObject.class);
+        return jsonObject.get("authToken").getAsString();
     }
 
     private static void preloginUI() {
@@ -60,7 +69,7 @@ public class Main {
                     joinGame();
                     break;
                 case "observe":
-                    System.out.println("Observe feature will be implemented in the next phase.");
+                    displayChessBoard();
                     break;
                 case "quit":
                     System.out.println("Goodbye!");
@@ -89,6 +98,21 @@ public class Main {
         System.out.println("  quit - Exit the application");
     }
 
+    private static void login() {
+        System.out.print("Enter username: ");
+        String username = scanner.nextLine();
+        System.out.print("Enter password: ");
+        String password = scanner.nextLine();
+
+        try {
+            String response = serverFacade.login(username, password);
+            authToken = extractAuthToken(response);  // Extract just the token
+            System.out.println("Login successful!");
+        } catch (IOException e) {
+            System.out.println("Login failed: " + e.getMessage());
+        }
+    }
+
     private static void register() {
         System.out.print("Enter username: ");
         String username = scanner.nextLine();
@@ -98,31 +122,16 @@ public class Main {
         String email = scanner.nextLine();
 
         try {
-            authToken = serverFacade.register(username, password, email);
+            String response = serverFacade.register(username, password, email);
+            authToken = extractAuthToken(response);  // Extract just the token
             System.out.println("Registration successful! Logged in as " + username);
-            System.out.println("Updated authToken: " + authToken); // Debug
         } catch (IOException e) {
             System.out.println("Registration failed: " + e.getMessage());
         }
     }
 
-    private static void login() {
-        System.out.print("Enter username: ");
-        String username = scanner.nextLine();
-        System.out.print("Enter password: ");
-        String password = scanner.nextLine();
-
-        try {
-            authToken = serverFacade.login(username, password);
-            System.out.println("Login successful!");
-        } catch (IOException e) {
-            System.out.println("Login failed: " + e.getMessage());
-        }
-    }
-
     private static void logout() {
         try {
-            System.out.println("Logout authToken: " + authToken); // Debug
             serverFacade.logout(authToken);
             System.out.println("Logged out successfully.");
             authToken = null;
@@ -166,9 +175,43 @@ public class Main {
         }
     }
 
-    // Placeholder method for chessboard display
     private static void displayChessBoard() {
-        // Print a basic chessboard structure, customizable as needed
-        System.out.println("Chessboard goes here. Display both perspectives.");
+        String[][] board = {
+                {EscapeSequences.BLACK_ROOK, EscapeSequences.BLACK_KNIGHT, EscapeSequences.BLACK_BISHOP, EscapeSequences.BLACK_QUEEN, EscapeSequences.BLACK_KING, EscapeSequences.BLACK_BISHOP, EscapeSequences.BLACK_KNIGHT, EscapeSequences.BLACK_ROOK},
+                {EscapeSequences.BLACK_PAWN, EscapeSequences.BLACK_PAWN, EscapeSequences.BLACK_PAWN, EscapeSequences.BLACK_PAWN, EscapeSequences.BLACK_PAWN, EscapeSequences.BLACK_PAWN, EscapeSequences.BLACK_PAWN, EscapeSequences.BLACK_PAWN},
+                {EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY},
+                {EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY},
+                {EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY},
+                {EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY},
+                {EscapeSequences.WHITE_PAWN, EscapeSequences.WHITE_PAWN, EscapeSequences.WHITE_PAWN, EscapeSequences.WHITE_PAWN, EscapeSequences.WHITE_PAWN, EscapeSequences.WHITE_PAWN, EscapeSequences.WHITE_PAWN, EscapeSequences.WHITE_PAWN},
+                {EscapeSequences.WHITE_ROOK, EscapeSequences.WHITE_KNIGHT, EscapeSequences.WHITE_BISHOP, EscapeSequences.WHITE_QUEEN, EscapeSequences.WHITE_KING, EscapeSequences.WHITE_BISHOP, EscapeSequences.WHITE_KNIGHT, EscapeSequences.WHITE_ROOK}
+        };
+
+        System.out.println("White's perspective:");
+        printBoard(board, true);
+
+        System.out.println("\nBlack's perspective:");
+        printBoard(board, false);
+    }
+
+    private static void printBoard(String[][] board, boolean whitePerspective) {
+        if (!whitePerspective) {
+            for (int i = 0; i < board.length / 2; i++) {
+                String[] temp = board[i];
+                board[i] = board[board.length - 1 - i];
+                board[board.length - 1 - i] = temp;
+            }
+        }
+
+        for (int i = 0; i < board.length; i++) {
+            for (int j = 0; j < board[i].length; j++) {
+                if ((i + j) % 2 == 0) {
+                    System.out.print(EscapeSequences.SET_BG_COLOR_LIGHT_GREY + board[i][j] + EscapeSequences.RESET_BG_COLOR);
+                } else {
+                    System.out.print(EscapeSequences.SET_BG_COLOR_DARK_GREY + board[i][j] + EscapeSequences.RESET_BG_COLOR);
+                }
+            }
+            System.out.println();
+        }
     }
 }
