@@ -4,6 +4,12 @@ import java.io.IOException;
 import java.util.Scanner;
 import client.ServerFacade;
 import ui.EscapeSequences;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import java.util.*;
+import com.google.gson.*;
+import java.util.*;
+import com.google.gson.*;
 
 public class Main {
 
@@ -11,6 +17,11 @@ public class Main {
     private static ServerFacade serverFacade = new ServerFacade("http://localhost:8080"); // Replace with actual server URL
     private static String authToken = null;
     private static final Gson gson = new Gson();
+    private static final Map<Integer, Integer> displayNumberToGameId = new HashMap<>();
+    private static int currentDisplayNumber = 1;
+    private static final Map<String, Integer> gameNameToId = new HashMap<>();
+
+
 
     public static void main(String[] args) {
         System.out.println("♕ Welcome to Chess Client! Type 'help' for available commands.");
@@ -92,86 +103,168 @@ public class Main {
         System.out.println("Available commands:");
         System.out.println("  create <gameName> - Create a new game");
         System.out.println("  list - List all games");
-        System.out.println("  join <gameId> <color> - Join a game as white or black");
-        System.out.println("  observe <gameId> - Observe a game (coming soon)");
+        System.out.println("  join - Join or observe a game");
         System.out.println("  logout - Logout of your account");
         System.out.println("  quit - Exit the application");
     }
 
     private static void login() {
-        System.out.print("Enter username: ");
-        String username = scanner.nextLine();
-        System.out.print("Enter password: ");
-        String password = scanner.nextLine();
-
         try {
+            System.out.print("Enter username: ");
+            String username = scanner.nextLine().trim();
+            System.out.print("Enter password: ");
+            String password = scanner.nextLine().trim();
+
+            if (username.isEmpty() || password.isEmpty()) {
+                System.out.println("Username and password cannot be empty.");
+                return;
+            }
+
             String response = serverFacade.login(username, password);
-            authToken = extractAuthToken(response);  // Extract just the token
-            System.out.println("Login successful!");
+            authToken = extractAuthToken(response);
+            System.out.println("Welcome back, " + username + "!");
         } catch (IOException e) {
-            System.out.println("Login failed: " + e.getMessage());
+            System.out.println("Invalid username or password.");
+        } catch (Exception e) {
+            System.out.println("An error occurred. Please try again.");
         }
     }
 
-    private static void register() {
-        System.out.print("Enter username: ");
-        String username = scanner.nextLine();
-        System.out.print("Enter password: ");
-        String password = scanner.nextLine();
-        System.out.print("Enter email: ");
-        String email = scanner.nextLine();
 
+    private static void register() {
         try {
+            System.out.print("Enter username: ");
+            String username = scanner.nextLine().trim();
+            System.out.print("Enter password: ");
+            String password = scanner.nextLine().trim();
+            System.out.print("Enter email: ");
+            String email = scanner.nextLine().trim();
+
+            if (username.isEmpty() || password.isEmpty() || email.isEmpty()) {
+                System.out.println("All fields are required.");
+                return;
+            }
+
             String response = serverFacade.register(username, password, email);
-            authToken = extractAuthToken(response);  // Extract just the token
-            System.out.println("Registration successful! Logged in as " + username);
+            authToken = extractAuthToken(response);
+            System.out.println("Welcome, " + username + "!");
         } catch (IOException e) {
-            System.out.println("Registration failed: " + e.getMessage());
+            System.out.println("Unable to register. Username may already be taken.");
+        } catch (Exception e) {
+            System.out.println("An error occurred. Please try again.");
         }
     }
 
     private static void logout() {
         try {
             serverFacade.logout(authToken);
-            System.out.println("Logged out successfully.");
+            System.out.println("Goodbye!");
             authToken = null;
         } catch (IOException e) {
-            System.out.println("Logout failed: " + e.getMessage());
+            System.out.println("Unable to logout. Please try again.");
+        } catch (Exception e) {
+            System.out.println("An error occurred. Please try again.");
         }
     }
 
     private static void createGame() {
-        System.out.print("Enter game name: ");
-        String gameName = scanner.nextLine();
-
         try {
+            System.out.print("Enter game name: ");
+            String gameName = scanner.nextLine().trim();
+
+            if (gameName.isEmpty()) {
+                System.out.println("Game name cannot be empty.");
+                return;
+            }
+
             serverFacade.createGame(authToken, gameName);
             System.out.println("Game '" + gameName + "' created successfully.");
         } catch (IOException e) {
-            System.out.println("Failed to create game: " + e.getMessage());
+            System.out.println("Unable to create game. Please try again.");
+        } catch (Exception e) {
+            System.out.println("An error occurred. Please try again.");
         }
     }
 
     private static void listGames() {
         try {
-            String games = serverFacade.listGames(authToken);
-            System.out.println("Available games:\n" + games);
+            String gamesJson = serverFacade.listGames(authToken);
+            JsonObject gamesObject = gson.fromJson(gamesJson, JsonObject.class);
+            JsonArray games = gamesObject.getAsJsonArray("games");
+
+            if (games.size() == 0) {
+                System.out.println("No games available.");
+                return;
+            }
+
+            // Clear previous mapping
+            gameNameToId.clear();
+
+            System.out.println("\nAvailable Games:");
+            System.out.println("----------------");
+            for (JsonElement gameElement : games) {
+                JsonObject game = gameElement.getAsJsonObject();
+                String gameName = game.get("gameName").getAsString();
+                String whitePlayer = game.has("whiteUsername") ? game.get("whiteUsername").getAsString() : "<EMPTY>";
+                String blackPlayer = game.has("blackUsername") ? game.get("blackUsername").getAsString() : "<EMPTY>";
+                int gameId = game.get("gameID").getAsInt();
+
+                // Store the mapping
+                gameNameToId.put(gameName, gameId);
+
+                System.out.printf("Game: %s\n", gameName);
+                System.out.printf("  White Player: %s\n", whitePlayer);
+                System.out.printf("  Black Player: %s\n", blackPlayer);
+                System.out.println();
+            }
         } catch (IOException e) {
-            System.out.println("Failed to list games: " + e.getMessage());
+            System.out.println("Unable to retrieve games. Please try again.");
+        } catch (Exception e) {
+            System.out.println("An error occurred. Please try again.");
         }
     }
 
     private static void joinGame() {
-        System.out.print("Enter game ID: ");
-        int gameId = Integer.parseInt(scanner.nextLine());
-        System.out.print("Enter color (white/black): ");
-        String color = scanner.nextLine();
-
         try {
+            // First list the games so user can see available games
+            listGames();
+
+            System.out.print("Enter game name: ");
+            String gameName = scanner.nextLine().trim();
+            System.out.print("Enter color (WHITE/BLACK/empty to observe): ");
+            String color = scanner.nextLine().trim().toUpperCase();
+
+            // Input validation
+            if (gameName.isEmpty()) {
+                System.out.println("Game name cannot be empty.");
+                return;
+            }
+
+            // Get the game ID from our mapping
+            Integer gameId = gameNameToId.get(gameName);
+            if (gameId == null) {
+                System.out.println("Game not found. Please enter an existing game name from the list.");
+                return;
+            }
+
+            if (!color.isEmpty() && !color.equals("WHITE") && !color.equals("BLACK")) {
+                System.out.println("Invalid color. Please enter WHITE, BLACK, or leave empty to observe.");
+                return;
+            }
+
             serverFacade.joinGame(authToken, gameId, color);
-            System.out.println("Joined game " + gameId + " as " + color + ".");
+
+            if (color.isEmpty()) {
+                System.out.printf("Observing game '%s'.\n", gameName);
+            } else {
+                System.out.printf("Joined game '%s' as %s.\n", gameName, color);
+            }
+            displayChessBoard();
+
         } catch (IOException e) {
-            System.out.println("Failed to join game: " + e.getMessage());
+            System.out.println("Unable to join game. Please verify the game name and try again.");
+        } catch (Exception e) {
+            System.out.println("An error occurred. Please try again.");
         }
     }
 
