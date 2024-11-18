@@ -3,6 +3,7 @@ import com.google.gson.JsonObject;
 import java.io.IOException;
 import java.util.Scanner;
 import client.ServerFacade;
+import ui.ChessBoard;
 import ui.EscapeSequences;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -177,6 +178,21 @@ public class Main {
                 return;
             }
 
+            // Check existing games for duplicate names
+            String gamesJson = serverFacade.listGames(authToken);
+            JsonObject gamesObject = gson.fromJson(gamesJson, JsonObject.class);
+            JsonArray games = gamesObject.getAsJsonArray("games");
+
+            // Check for duplicate game names
+            for (JsonElement gameElement : games) {
+                JsonObject game = gameElement.getAsJsonObject();
+                if (game.get("gameName").getAsString().equals(gameName)) {
+                    System.out.println("A game with this name already exists. Please choose a different name.");
+                    return;
+                }
+            }
+
+            // If no duplicates found, create the game
             serverFacade.createGame(authToken, gameName);
             System.out.println("Game '" + gameName + "' created successfully.");
         } catch (IOException e) {
@@ -256,10 +272,11 @@ public class Main {
 
             if (color.isEmpty()) {
                 System.out.printf("Observing game '%s'.\n", gameName);
+                displayChessBoard(null); // Pass null to indicate observer
             } else {
                 System.out.printf("Joined game '%s' as %s.\n", gameName, color);
+                displayChessBoard(color); // Pass the color to show proper perspective first
             }
-            displayChessBoard();
 
         } catch (IOException e) {
             System.out.println("Unable to join game. Please verify the game name and try again.");
@@ -268,43 +285,68 @@ public class Main {
         }
     }
 
-    private static void displayChessBoard() {
-        String[][] board = {
-                {EscapeSequences.BLACK_ROOK, EscapeSequences.BLACK_KNIGHT, EscapeSequences.BLACK_BISHOP, EscapeSequences.BLACK_QUEEN, EscapeSequences.BLACK_KING, EscapeSequences.BLACK_BISHOP, EscapeSequences.BLACK_KNIGHT, EscapeSequences.BLACK_ROOK},
-                {EscapeSequences.BLACK_PAWN, EscapeSequences.BLACK_PAWN, EscapeSequences.BLACK_PAWN, EscapeSequences.BLACK_PAWN, EscapeSequences.BLACK_PAWN, EscapeSequences.BLACK_PAWN, EscapeSequences.BLACK_PAWN, EscapeSequences.BLACK_PAWN},
-                {EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY},
-                {EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY},
-                {EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY},
-                {EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY},
-                {EscapeSequences.WHITE_PAWN, EscapeSequences.WHITE_PAWN, EscapeSequences.WHITE_PAWN, EscapeSequences.WHITE_PAWN, EscapeSequences.WHITE_PAWN, EscapeSequences.WHITE_PAWN, EscapeSequences.WHITE_PAWN, EscapeSequences.WHITE_PAWN},
-                {EscapeSequences.WHITE_ROOK, EscapeSequences.WHITE_KNIGHT, EscapeSequences.WHITE_BISHOP, EscapeSequences.WHITE_QUEEN, EscapeSequences.WHITE_KING, EscapeSequences.WHITE_BISHOP, EscapeSequences.WHITE_KNIGHT, EscapeSequences.WHITE_ROOK}
-        };
+    private static void displayChessBoard(String playerColor) {
+        try {
+            Scanner userInput = new Scanner(System.in);
+            ChessBoard board = new ChessBoard();
 
-        System.out.println("White's perspective:");
-        printBoard(board, true);
+            // If player is playing (not observing)
+            if (playerColor != null) {
+                System.out.println("\nPress Enter to see the board from your perspective (" + playerColor + ")...");
+                userInput.nextLine();
 
-        System.out.println("\nBlack's perspective:");
-        printBoard(board, false);
-    }
-
-    private static void printBoard(String[][] board, boolean whitePerspective) {
-        if (!whitePerspective) {
-            for (int i = 0; i < board.length / 2; i++) {
-                String[] temp = board[i];
-                board[i] = board[board.length - 1 - i];
-                board[board.length - 1 - i] = temp;
-            }
-        }
-
-        for (int i = 0; i < board.length; i++) {
-            for (int j = 0; j < board[i].length; j++) {
-                if ((i + j) % 2 == 0) {
-                    System.out.print(EscapeSequences.SET_BG_COLOR_LIGHT_GREY + board[i][j] + EscapeSequences.RESET_BG_COLOR);
+                // Show player's perspective first
+                if (playerColor.equals("BLACK")) {
+                    board.displayBlackPerspective();
                 } else {
-                    System.out.print(EscapeSequences.SET_BG_COLOR_DARK_GREY + board[i][j] + EscapeSequences.RESET_BG_COLOR);
+                    board.displayWhitePerspective();
+                }
+
+                // Then show the opposite perspective
+                System.out.println("\nPress Enter to see the opposite perspective...");
+                userInput.nextLine();
+
+                if (playerColor.equals("BLACK")) {
+                    board.displayWhitePerspective();
+                } else {
+                    board.displayBlackPerspective();
                 }
             }
-            System.out.println();
+            // If player is observing
+            else {
+                System.out.println("\nPress Enter to see Black's perspective...");
+                userInput.nextLine();
+                board.displayBlackPerspective();
+
+                System.out.println("\nPress Enter to see White's perspective...");
+                userInput.nextLine();
+                board.displayWhitePerspective();
+            }
+
+        } catch (Exception e) {
+            System.out.println("Error displaying chess board. Press Enter to continue.");
+        }
+    }
+
+    private static void displayChessBoard() {
+        try {
+            Scanner userInput = new Scanner(System.in);
+            ChessBoard board = new ChessBoard();
+
+            System.out.println("\nPress Enter to see the board...");
+            userInput.nextLine();
+
+            // Show Black's perspective first
+            board.displayBlackPerspective();
+
+            System.out.println("\nPress Enter to see White's perspective...");
+            userInput.nextLine();
+
+            // Show White's perspective
+            board.displayWhitePerspective();
+
+        } catch (Exception e) {
+            System.out.println("Error displaying chess board. Press Enter to continue.");
         }
     }
 }
