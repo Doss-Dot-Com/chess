@@ -18,8 +18,6 @@ public class Main {
     private static ServerFacade serverFacade = new ServerFacade("http://localhost:8080"); // Replace with actual server URL
     private static String authToken = null;
     private static final Gson gson = new Gson();
-    private static final Map<Integer, Integer> displayNumberToGameId = new HashMap<>();
-    private static int currentDisplayNumber = 1;
     private static final Map<String, Integer> gameNameToId = new HashMap<>();
 
 
