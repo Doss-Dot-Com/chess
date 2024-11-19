@@ -48,7 +48,16 @@ public class ChessBoard {
             reverseBoard(displayBoard);
         }
 
+        // Print top file labels
+        printFileLabels(whitePerspective);
+
+        // Print board with rank labels
         for (int i = 0; i < displayBoard.length; i++) {
+            // Print rank number at start of row
+            int rankNumber = whitePerspective ? 8 - i : i + 1;
+            System.out.print(rankNumber + " ");
+
+            // Print board row
             for (int j = 0; j < displayBoard[i].length; j++) {
                 if ((i + j) % 2 == 0) {
                     System.out.print(EscapeSequences.SET_BG_COLOR_LIGHT_GREY + displayBoard[i][j] + EscapeSequences.RESET_BG_COLOR);
@@ -56,8 +65,22 @@ public class ChessBoard {
                     System.out.print(EscapeSequences.SET_BG_COLOR_DARK_GREY + displayBoard[i][j] + EscapeSequences.RESET_BG_COLOR);
                 }
             }
-            System.out.println();
+
+            // Print rank number at end of row
+            System.out.println(" " + rankNumber);
         }
+
+        // Print bottom file labels
+        printFileLabels(whitePerspective);
+    }
+
+    private void printFileLabels(boolean whitePerspective) {
+        System.out.print("  "); // Align with rank numbers
+        for (int i = 0; i < 8; i++) {
+            char file = (char) (whitePerspective ? 'a' + i : 'h' - i);
+            System.out.print(" " + file + " ");
+        }
+        System.out.println();
     }
 
     private String[][] copyBoard() {
