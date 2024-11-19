@@ -10,11 +10,11 @@ import java.util.*;
 
 public class Main {
 
-    private static final Scanner scanner = new Scanner(System.in);
+    private static final Scanner SCANNER = new Scanner(System.in);
     private static ServerFacade serverFacade = new ServerFacade("http://localhost:8080"); // Replace with actual server URL
     private static String authToken = null;
-    private static final Gson gson = new Gson();
-    private static final Map<String, Integer> gameNameToId = new HashMap<>();
+    private static final Gson GSON = new Gson();
+    private static final Map<String, Integer> GAME_NAME_TO_ID = new HashMap<>();
 
 
 
@@ -24,14 +24,14 @@ public class Main {
     }
 
     private static String extractAuthToken(String jsonString) {
-        JsonObject jsonObject = gson.fromJson(jsonString, JsonObject.class);
+        JsonObject jsonObject = GSON.fromJson(jsonString, JsonObject.class);
         return jsonObject.get("authToken").getAsString();
     }
 
     private static void preloginUI() {
         while (authToken == null) {
             System.out.print("[LOGGED_OUT] >>> ");
-            String command = scanner.nextLine().trim().toLowerCase();
+            String command = SCANNER.nextLine().trim().toLowerCase();
 
             switch (command) {
                 case "help":
@@ -56,7 +56,7 @@ public class Main {
     private static void postloginUI() {
         while (authToken != null) {
             System.out.print("[LOGGED_IN] >>> ");
-            String command = scanner.nextLine().trim().toLowerCase();
+            String command = SCANNER.nextLine().trim().toLowerCase();
 
             switch (command) {
                 case "help":
@@ -106,9 +106,9 @@ public class Main {
     private static void login() {
         try {
             System.out.print("Enter username: ");
-            String username = scanner.nextLine().trim();
+            String username = SCANNER.nextLine().trim();
             System.out.print("Enter password: ");
-            String password = scanner.nextLine().trim();
+            String password = SCANNER.nextLine().trim();
 
             if (username.isEmpty() || password.isEmpty()) {
                 System.out.println("Username and password cannot be empty.");
@@ -129,11 +129,11 @@ public class Main {
     private static void register() {
         try {
             System.out.print("Enter username: ");
-            String username = scanner.nextLine().trim();
+            String username = SCANNER.nextLine().trim();
             System.out.print("Enter password: ");
-            String password = scanner.nextLine().trim();
+            String password = SCANNER.nextLine().trim();
             System.out.print("Enter email: ");
-            String email = scanner.nextLine().trim();
+            String email = SCANNER.nextLine().trim();
 
             if (username.isEmpty() || password.isEmpty() || email.isEmpty()) {
                 System.out.println("All fields are required.");
@@ -165,7 +165,7 @@ public class Main {
     private static void createGame() {
         try {
             System.out.print("Enter game name: ");
-            String gameName = scanner.nextLine().trim();
+            String gameName = SCANNER.nextLine().trim();
 
             if (gameName.isEmpty()) {
                 System.out.println("Game name cannot be empty.");
@@ -174,7 +174,7 @@ public class Main {
 
             // Check existing games for duplicate names
             String gamesJson = serverFacade.listGames(authToken);
-            JsonObject gamesObject = gson.fromJson(gamesJson, JsonObject.class);
+            JsonObject gamesObject = GSON.fromJson(gamesJson, JsonObject.class);
             JsonArray games = gamesObject.getAsJsonArray("games");
 
             // Check for duplicate game names
@@ -199,7 +199,7 @@ public class Main {
     private static void listGames() {
         try {
             String gamesJson = serverFacade.listGames(authToken);
-            JsonObject gamesObject = gson.fromJson(gamesJson, JsonObject.class);
+            JsonObject gamesObject = GSON.fromJson(gamesJson, JsonObject.class);
             JsonArray games = gamesObject.getAsJsonArray("games");
 
             if (games.size() == 0) {
@@ -208,7 +208,7 @@ public class Main {
             }
 
             // Clear previous mapping
-            gameNameToId.clear();
+            GAME_NAME_TO_ID.clear();
 
             System.out.println("\nAvailable Games:");
             System.out.println("----------------");
@@ -220,7 +220,7 @@ public class Main {
                 int gameId = game.get("gameID").getAsInt();
 
                 // Store the mapping
-                gameNameToId.put(gameName, gameId);
+                GAME_NAME_TO_ID.put(gameName, gameId);
 
                 System.out.printf("Game: %s\n", gameName);
                 System.out.printf("  White Player: %s\n", whitePlayer);
@@ -240,9 +240,9 @@ public class Main {
             listGames();
 
             System.out.print("Enter game name: ");
-            String gameName = scanner.nextLine().trim();
+            String gameName = SCANNER.nextLine().trim();
             System.out.print("Enter color (WHITE/BLACK/empty to observe): ");
-            String color = scanner.nextLine().trim().toUpperCase();
+            String color = SCANNER.nextLine().trim().toUpperCase();
 
             // Input validation
             if (gameName.isEmpty()) {
@@ -251,7 +251,7 @@ public class Main {
             }
 
             // Get the game ID from our mapping
-            Integer gameId = gameNameToId.get(gameName);
+            Integer gameId = GAME_NAME_TO_ID.get(gameName);
             if (gameId == null) {
                 System.out.println("Game not found. Please enter an existing game name from the list.");
                 return;
