@@ -4,13 +4,9 @@ import java.io.IOException;
 import java.util.Scanner;
 import client.ServerFacade;
 import ui.ChessBoard;
-import ui.EscapeSequences;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import java.util.*;
-import com.google.gson.*;
-import java.util.*;
-import com.google.gson.*;
 
 public class Main {
 
